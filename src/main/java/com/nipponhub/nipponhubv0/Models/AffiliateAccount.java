@@ -1,0 +1,37 @@
+package com.nipponhub.nipponhubv0.Models;
+
+import java.math.BigDecimal;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Entity
+@Table(name = "affiliate_account")
+@AllArgsConstructor
+@Setter
+@Getter
+@NoArgsConstructor
+public class AffiliateAccount {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @OneToOne
+    @JoinColumn(name = "user_id")
+    private OurUsers user;
+
+    @Column(unique = true)
+    private String referralCode;
+
+    private BigDecimal balanceXaf = BigDecimal.ZERO;
+}
