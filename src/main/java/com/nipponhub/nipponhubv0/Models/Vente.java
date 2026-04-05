@@ -3,14 +3,7 @@ package com.nipponhub.nipponhubv0.Models;
 import java.time.LocalDate;
 import java.util.List;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -31,5 +24,21 @@ public class Vente {
 
     @OneToMany(mappedBy = "vente", cascade = CascadeType.ALL)
     private List<VenteItem> items;
+
+     /**
+     * The client whose order triggered this sale.
+     * Null for direct admin sales (no commande).
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "client_id")
+    private OurUsers client;
+ 
+    /**
+     * The commande this vente was created from.
+     * Null for direct admin sales.
+     */
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "commande_id", unique = true)
+    private Commande commande;
 
 }

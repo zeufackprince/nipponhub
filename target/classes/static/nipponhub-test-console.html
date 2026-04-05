@@ -1,1798 +1,994 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>NipponHub — API Test Console</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-<style>
-  :root {
-    --bg:       #0a0a0f;
-    --surface:  #12121a;
-    --panel:    #1a1a26;
-    --border:   #2a2a3d;
-    --accent:   #e84545;
-    --accent2:  #f5a623;
-    --green:    #2dce89;
-    --blue:     #4d9fff;
-    --text:     #e8e8f0;
-    --muted:    #6b6b8a;
-    --font:     'Syne', sans-serif;
-    --mono:     'JetBrains Mono', monospace;
-  }
-
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--font);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  /* ── NOISE TEXTURE ── */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  /* ── HEADER ── */
-  header {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: rgba(10,10,15,0.92);
-    backdrop-filter: blur(20px);
-    border-bottom: 1px solid var(--border);
-    padding: 0 2rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 64px;
-  }
-
-  .logo {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-size: 1.2rem;
-    font-weight: 800;
-    letter-spacing: -0.02em;
-  }
-
-  .logo-mark {
-    width: 32px; height: 32px;
-    background: var(--accent);
-    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-    display: grid;
-    place-items: center;
-    font-size: 0.65rem;
-    font-weight: 800;
-    color: white;
-    letter-spacing: 0;
-    animation: pulse-mark 3s ease-in-out infinite;
-  }
-
-  @keyframes pulse-mark {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(232,69,69,0.4); }
-    50% { box-shadow: 0 0 0 8px rgba(232,69,69,0); }
-  }
-
-  .base-url-badge {
-    font-family: var(--mono);
-    font-size: 0.7rem;
-    color: var(--muted);
-    background: var(--surface);
-    border: 1px solid var(--border);
-    padding: 4px 12px;
-    border-radius: 20px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .status-dot {
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    background: var(--green);
-    animation: blink 2s ease-in-out infinite;
-  }
-
-  @keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
-  }
-
-  /* ── LAYOUT ── */
-  .layout {
-    display: grid;
-    grid-template-columns: 220px 1fr 360px;
-    gap: 0;
-    height: calc(100vh - 64px);
-    position: relative;
-    z-index: 1;
-  }
-
-  /* ── SIDEBAR ── */
-  .sidebar {
-    border-right: 1px solid var(--border);
-    padding: 1.5rem 0;
-    overflow-y: auto;
-    background: var(--surface);
-  }
-
-  .sidebar-section {
-    margin-bottom: 0.5rem;
-  }
-
-  .sidebar-label {
-    font-size: 0.6rem;
-    font-weight: 700;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--muted);
-    padding: 0.5rem 1.25rem;
-  }
-
-  .nav-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 0.6rem 1.25rem;
-    cursor: pointer;
-    font-size: 0.82rem;
-    font-weight: 600;
-    color: var(--muted);
-    border-left: 2px solid transparent;
-    transition: all 0.15s;
-  }
-
-  .nav-item:hover { color: var(--text); background: rgba(255,255,255,0.03); }
-
-  .nav-item.active {
-    color: var(--text);
-    border-left-color: var(--accent);
-    background: rgba(232,69,69,0.07);
-  }
-
-  .method-badge {
-    font-family: var(--mono);
-    font-size: 0.55rem;
-    font-weight: 500;
-    padding: 2px 6px;
-    border-radius: 3px;
-    min-width: 34px;
-    text-align: center;
-  }
-
-  .GET    { background: rgba(77,159,255,0.15); color: var(--blue); }
-  .POST   { background: rgba(45,206,137,0.15); color: var(--green); }
-  .DELETE { background: rgba(232,69,69,0.15);  color: var(--accent); }
-
-  /* ── MAIN PANEL ── */
-  .main {
-    overflow-y: auto;
-    padding: 2rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-
-  .section-title {
-    font-size: 1.4rem;
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 0.25rem;
-  }
-
-  .section-title::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-  }
-
-  .card {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    overflow: hidden;
-    transition: border-color 0.2s;
-  }
-
-  .card:hover { border-color: #3a3a55; }
-
-  .card-header {
-    padding: 1rem 1.25rem;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background: rgba(255,255,255,0.02);
-  }
-
-  .card-header h3 {
-    font-size: 0.88rem;
-    font-weight: 700;
-    flex: 1;
-  }
-
-  .endpoint-path {
-    font-family: var(--mono);
-    font-size: 0.72rem;
-    color: var(--muted);
-  }
-
-  .card-body { padding: 1.25rem; }
-
-  /* ── FORM ELEMENTS ── */
-  .form-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 0.75rem;
-  }
-
-  .form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-  }
-
-  .form-group.full { grid-column: 1 / -1; }
-
-  label {
-    font-size: 0.68rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--muted);
-  }
-
-  input, select, textarea {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 7px;
-    padding: 0.55rem 0.8rem;
-    color: var(--text);
-    font-family: var(--mono);
-    font-size: 0.8rem;
-    outline: none;
-    transition: border-color 0.15s, box-shadow 0.15s;
-    width: 100%;
-  }
-
-  input:focus, select:focus, textarea:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(232,69,69,0.12);
-  }
-
-  select option { background: var(--bg); }
-
-  textarea { resize: vertical; min-height: 80px; }
-
-  .file-input-wrapper {
-    position: relative;
-    border: 1px dashed var(--border);
-    border-radius: 7px;
-    padding: 1rem;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    background: var(--bg);
-  }
-
-  .file-input-wrapper:hover {
-    border-color: var(--accent);
-    background: rgba(232,69,69,0.04);
-  }
-
-  .file-input-wrapper input[type="file"] {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    cursor: pointer;
-  }
-
-  .file-label {
-    font-size: 0.75rem;
-    color: var(--muted);
-    pointer-events: none;
-  }
-
-  .file-label span { color: var(--accent); font-weight: 700; }
-
-  /* ── BUTTONS ── */
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 0.6rem 1.2rem;
-    border-radius: 7px;
-    border: none;
-    font-family: var(--font);
-    font-size: 0.8rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.15s;
-    letter-spacing: 0.02em;
-  }
-
-  .btn-primary {
-    background: var(--accent);
-    color: white;
-  }
-
-  .btn-primary:hover {
-    background: #ff5555;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 20px rgba(232,69,69,0.35);
-  }
-
-  .btn-secondary {
-    background: var(--border);
-    color: var(--text);
-  }
-
-  .btn-secondary:hover { background: #3a3a55; }
-
-  .btn-danger {
-    background: rgba(232,69,69,0.15);
-    color: var(--accent);
-    border: 1px solid rgba(232,69,69,0.3);
-  }
-
-  .btn-danger:hover { background: rgba(232,69,69,0.25); }
-
-  .btn-success {
-    background: rgba(45,206,137,0.15);
-    color: var(--green);
-    border: 1px solid rgba(45,206,137,0.3);
-  }
-
-  .btn-success:hover { background: rgba(45,206,137,0.25); }
-
-  .btn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-    transform: none !important;
-  }
-
-  .btn-row {
-    display: flex;
-    gap: 0.75rem;
-    align-items: center;
-    margin-top: 1rem;
-    flex-wrap: wrap;
-  }
-
-  /* ── LOG PANEL ── */
-  .log-panel {
-    border-left: 1px solid var(--border);
-    background: var(--surface);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-
-  .log-header {
-    padding: 1rem 1.25rem;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-size: 0.8rem;
-    font-weight: 700;
-    flex-shrink: 0;
-  }
-
-  .log-header-right { display: flex; gap: 8px; align-items: center; }
-
-  .log-count {
-    background: var(--accent);
-    color: white;
-    font-size: 0.6rem;
-    font-weight: 700;
-    padding: 2px 7px;
-    border-radius: 20px;
-    min-width: 20px;
-    text-align: center;
-  }
-
-  .log-scroll {
-    flex: 1;
-    overflow-y: auto;
-    padding: 0.75rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .log-entry {
-    border-radius: 8px;
-    overflow: hidden;
-    border: 1px solid var(--border);
-    animation: slide-in 0.2s ease;
-  }
-
-  @keyframes slide-in {
-    from { opacity: 0; transform: translateX(10px); }
-    to   { opacity: 1; transform: translateX(0); }
-  }
-
-  .log-entry-header {
-    padding: 0.5rem 0.75rem;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.7rem;
-    font-weight: 700;
-    cursor: pointer;
-  }
-
-  .log-entry.success .log-entry-header { background: rgba(45,206,137,0.1); color: var(--green); }
-  .log-entry.error   .log-entry-header { background: rgba(232,69,69,0.1);  color: var(--accent); }
-  .log-entry.info    .log-entry-header { background: rgba(77,159,255,0.1); color: var(--blue); }
-
-  .log-entry-time { margin-left: auto; color: var(--muted); font-weight: 400; }
-
-  .log-entry-body {
-    padding: 0.75rem;
-    background: var(--bg);
-    font-family: var(--mono);
-    font-size: 0.68rem;
-    color: var(--text);
-    white-space: pre-wrap;
-    word-break: break-all;
-    max-height: 200px;
-    overflow-y: auto;
-    display: none;
-  }
-
-  .log-entry-body.open { display: block; }
-
-  /* ── PRODUCTS DISPLAY GRID ── */
-  .products-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 1rem;
-  }
-
-  .product-card {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    overflow: hidden;
-    transition: all 0.2s;
-    animation: fade-up 0.3s ease;
-  }
-
-  @keyframes fade-up {
-    from { opacity: 0; transform: translateY(8px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  .product-card:hover {
-    border-color: var(--accent);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 30px rgba(0,0,0,0.4);
-  }
-
-  .product-img {
-    width: 100%;
-    height: 140px;
-    object-fit: cover;
-    background: var(--bg);
-    display: block;
-  }
-
-  .product-img-placeholder {
-    width: 100%;
-    height: 140px;
-    background: var(--bg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2rem;
-    color: var(--border);
-  }
-
-  .product-info { padding: 0.85rem; }
-
-  .product-name {
-    font-size: 0.85rem;
-    font-weight: 700;
-    margin-bottom: 0.4rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .product-meta {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-    margin-bottom: 0.6rem;
-  }
-
-  .tag {
-    font-family: var(--mono);
-    font-size: 0.6rem;
-    padding: 2px 7px;
-    border-radius: 4px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    color: var(--muted);
-  }
-
-  .price {
-    font-family: var(--mono);
-    font-size: 0.78rem;
-    color: var(--accent2);
-    font-weight: 500;
-  }
-
-  .product-actions {
-    display: flex;
-    gap: 0.4rem;
-    margin-top: 0.6rem;
-  }
-
-  .product-actions .btn { font-size: 0.7rem; padding: 0.3rem 0.7rem; flex: 1; justify-content: center; }
-
-  /* ── IMAGE GALLERY ── */
-  .image-gallery {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-    margin-top: 0.75rem;
-  }
-
-  .gallery-img {
-    width: 70px;
-    height: 70px;
-    object-fit: cover;
-    border-radius: 6px;
-    border: 1px solid var(--border);
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .gallery-img:hover {
-    border-color: var(--accent);
-    transform: scale(1.05);
-  }
-
-  /* ── TABS ── */
-  .tabs {
-    display: flex;
-    gap: 0;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 1.25rem;
-  }
-
-  .tab {
-    padding: 0.6rem 1.1rem;
-    font-size: 0.78rem;
-    font-weight: 700;
-    color: var(--muted);
-    cursor: pointer;
-    border-bottom: 2px solid transparent;
-    margin-bottom: -1px;
-    transition: all 0.15s;
-  }
-
-  .tab:hover { color: var(--text); }
-
-  .tab.active {
-    color: var(--text);
-    border-bottom-color: var(--accent);
-  }
-
-  .tab-pane { display: none; }
-  .tab-pane.active { display: block; }
-
-  /* ── SPINNER ── */
-  .spinner {
-    width: 14px; height: 14px;
-    border: 2px solid rgba(255,255,255,0.2);
-    border-top-color: white;
-    border-radius: 50%;
-    animation: spin 0.6s linear infinite;
-    display: none;
-  }
-
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* ── SECTION VISIBILITY ── */
-  .section { display: none; }
-  .section.active { display: block; }
-
-  /* ── EMPTY STATE ── */
-  .empty-state {
-    text-align: center;
-    padding: 3rem 1rem;
-    color: var(--muted);
-  }
-
-  .empty-state .icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
-  .empty-state p { font-size: 0.82rem; }
-
-  /* ── SCROLLBAR ── */
-  ::-webkit-scrollbar { width: 5px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
-  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
-
-  /* ── TOAST ── */
-  .toast-container {
-    position: fixed;
-    bottom: 1.5rem;
-    right: 1.5rem;
-    z-index: 9999;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .toast {
-    padding: 0.75rem 1.1rem;
-    border-radius: 8px;
-    font-size: 0.78rem;
-    font-weight: 600;
-    min-width: 240px;
-    animation: toast-in 0.25s ease;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.5);
-  }
-
-  @keyframes toast-in {
-    from { opacity: 0; transform: translateY(10px) scale(0.95); }
-    to   { opacity: 1; transform: translateY(0) scale(1); }
-  }
-
-  .toast.success { background: rgba(45,206,137,0.15); border: 1px solid var(--green); color: var(--green); }
-  .toast.error   { background: rgba(232,69,69,0.15);  border: 1px solid var(--accent); color: var(--accent); }
-  .toast.info    { background: rgba(77,159,255,0.15); border: 1px solid var(--blue); color: var(--blue); }
-
-  /* ── MODAL ── */
-  .modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.75);
-    backdrop-filter: blur(4px);
-    z-index: 999;
-    display: none;
-    place-items: center;
-  }
-
-  .modal-overlay.open { display: grid; }
-
-  .modal {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 1.5rem;
-    width: 90%;
-    max-width: 500px;
-    animation: modal-in 0.2s ease;
-  }
-
-  @keyframes modal-in {
-    from { opacity: 0; transform: scale(0.95); }
-    to   { opacity: 1; transform: scale(1); }
-  }
-
-  .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.25rem;
-  }
-
-  .modal-title { font-size: 1rem; font-weight: 800; }
-
-  .modal-close {
-    background: none;
-    border: none;
-    color: var(--muted);
-    cursor: pointer;
-    font-size: 1.2rem;
-    line-height: 1;
-    transition: color 0.15s;
-  }
-
-  .modal-close:hover { color: var(--accent); }
-
-  .divider {
-    height: 1px;
-    background: var(--border);
-    margin: 1.25rem 0;
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nipponhub API Tester • Frontend complet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+        body { font-family: 'Inter', system_ui, sans-serif; }
+        .response-json { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+        .tab-active { border-bottom: 3px solid #e11d48; color: #e11d48; }
+        textarea, input, select { color: #f4f4f5; }
+    </style>
 </head>
-<body>
-
-<!-- ── HEADER ── -->
-<header>
-  <div class="logo">
-    <div class="logo-mark">NH</div>
-    NipponHub <span style="color:var(--muted);font-weight:400;font-size:0.85rem">API Console</span>
-  </div>
-  <div style="display:flex;gap:1rem;align-items:center">
-    <div class="base-url-badge">
-      <div class="status-dot"></div>
-      <span id="baseUrlDisplay">http://localhost:8080</span>
-    </div>
-    <button class="btn btn-secondary" style="font-size:0.72rem;padding:0.4rem 0.8rem" onclick="openBaseUrlModal()">⚙ Config</button>
-  </div>
-</header>
-
-<!-- ── LAYOUT ── -->
-<div class="layout">
-
-  <!-- ── SIDEBAR ── -->
-  <nav class="sidebar">
-    <div class="sidebar-section">
-      <div class="sidebar-label">Products</div>
-      <div class="nav-item active" onclick="showSection('products')">
-        <span class="method-badge POST">POST</span> Create
-      </div>
-      <div class="nav-item" onclick="showSection('products'); switchTab('tab-update')">
-        <span class="method-badge POST">POST</span> Update
-      </div>
-      <div class="nav-item" onclick="showSection('products'); switchTab('tab-list')">
-        <span class="method-badge GET">GET</span> List All
-      </div>
-      <div class="nav-item" onclick="showSection('products'); switchTab('tab-getone')">
-        <span class="method-badge GET">GET</span> Get by ID
-      </div>
-      <div class="nav-item" onclick="showSection('products'); switchTab('tab-search')">
-        <span class="method-badge GET">GET</span> Search
-      </div>
-    </div>
-
-    <div class="sidebar-section">
-      <div class="sidebar-label">Files</div>
-      <div class="nav-item" onclick="showSection('files')">
-        <span class="method-badge POST">POST</span> Upload
-      </div>
-      <div class="nav-item" onclick="showSection('files'); switchTab('tab-file-get')">
-        <span class="method-badge GET">GET</span> Serve File
-      </div>
-      <div class="nav-item" onclick="showSection('files'); switchTab('tab-file-meta')">
-        <span class="method-badge GET">GET</span> Metadata
-      </div>
-      <div class="nav-item" onclick="showSection('files'); switchTab('tab-file-delete')">
-        <span class="method-badge DELETE">DEL</span> Delete
-      </div>
-    </div>
-
-    <div class="sidebar-section">
-      <div class="sidebar-label">Reference Data</div>
-      <div class="nav-item" onclick="showSection('categories')">
-        <span class="method-badge GET">GET</span> Categories
-      </div>
-      <div class="nav-item" onclick="showSection('countries')">
-        <span class="method-badge GET">GET</span> Countries
-      </div>
-    </div>
-  </nav>
-
-  <!-- ── MAIN ── -->
-  <main class="main">
-
-    <!-- ═══ PRODUCTS SECTION ═══ -->
-    <div id="section-products" class="section active">
-      <div class="section-title">🛍 Products</div>
-
-      <div class="tabs">
-        <div class="tab active" id="tab-create" onclick="switchTab('tab-create')">Create</div>
-        <div class="tab" id="tab-update" onclick="switchTab('tab-update')">Update</div>
-        <div class="tab" id="tab-list" onclick="switchTab('tab-list')">All Products</div>
-        <div class="tab" id="tab-getone" onclick="switchTab('tab-getone')">By ID</div>
-        <div class="tab" id="tab-search" onclick="switchTab('tab-search')">Search</div>
-      </div>
-
-      <!-- CREATE -->
-      <div class="tab-pane active" id="pane-create">
-        <div class="card">
-          <div class="card-header">
-            <span class="method-badge POST">POST</span>
-            <h3>Create New Product</h3>
-            <span class="endpoint-path">/api/v0/product/newProduct</span>
-          </div>
-          <div class="card-body">
-            <div class="form-grid">
-              <div class="form-group">
-                <label>Product Name *</label>
-                <input id="c_name" type="text" placeholder="e.g. Katana Sword" />
-              </div>
-              <div class="form-group">
-                <label>Unit Price *</label>
-                <input id="c_unitPrice" type="number" step="0.01" placeholder="150.00" />
-              </div>
-              <div class="form-group">
-                <label>Sold Price *</label>
-                <input id="c_soldPrice" type="number" step="0.01" placeholder="199.00" />
-              </div>
-              <div class="form-group">
-                <label>Quantity *</label>
-                <input id="c_qty" type="number" placeholder="10" />
-              </div>
-              <div class="form-group">
-                <label>Category *</label>
-                <input id="c_category" type="text" placeholder="e.g. Weapons" />
-              </div>
-              <div class="form-group">
-                <label>Countries * (comma-separated)</label>
-                <input id="c_countries" type="text" placeholder="Japan, France" />
-              </div>
-              <div class="form-group full">
-                <label>Product Images</label>
-                <div class="file-input-wrapper">
-                  <input type="file" id="c_images" multiple accept="image/*" onchange="updateFileLabel('c_images','c_file_label')" />
-                  <div class="file-label" id="c_file_label">
-                    <span>Browse</span> or drop images here (multiple allowed)
-                  </div>
+<body class="bg-zinc-950 text-zinc-100">
+    <div class="flex h-screen overflow-hidden">
+        <!-- SIDEBAR -->
+        <div class="w-72 bg-zinc-900 border-r border-zinc-800 flex flex-col">
+            <div class="p-6 border-b border-zinc-800">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-rose-600 rounded-2xl flex items-center justify-center text-white font-bold text-2xl">N</div>
+                    <div>
+                        <h1 class="text-3xl font-semibold tracking-tight">Nipponhub</h1>
+                        <p class="text-xs text-zinc-500 -mt-1">API Tester v2.0</p>
+                    </div>
                 </div>
-              </div>
             </div>
-            <div class="btn-row">
-              <button class="btn btn-primary" onclick="createProduct()">
-                <div class="spinner" id="spinner-create"></div>
-                ✦ Create Product
-              </button>
-              <button class="btn btn-secondary" onclick="resetForm('create')">Reset</button>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      <!-- UPDATE -->
-      <div class="tab-pane" id="pane-update">
-        <div class="card">
-          <div class="card-header">
-            <span class="method-badge POST">POST</span>
-            <h3>Update Product</h3>
-            <span class="endpoint-path">/api/v0/product/updateProduct/{id}</span>
-          </div>
-          <div class="card-body">
-            <div class="form-grid">
-              <div class="form-group">
-                <label>Product ID *</label>
-                <input id="u_id" type="number" placeholder="1" />
-              </div>
-              <div class="form-group">
-                <label>Product Name</label>
-                <input id="u_name" type="text" placeholder="Leave blank to keep existing" />
-              </div>
-              <div class="form-group">
-                <label>Unit Price</label>
-                <input id="u_unitPrice" type="number" step="0.01" placeholder="Leave blank to keep existing" />
-              </div>
-              <div class="form-group">
-                <label>Sold Price</label>
-                <input id="u_soldPrice" type="number" step="0.01" placeholder="Leave blank to keep existing" />
-              </div>
-              <div class="form-group">
-                <label>Quantity</label>
-                <input id="u_qty" type="number" placeholder="Leave blank to keep existing" />
-              </div>
-              <div class="form-group">
-                <label>Category</label>
-                <input id="u_category" type="text" placeholder="Leave blank to keep existing" />
-              </div>
-              <div class="form-group">
-                <label>Countries (comma-separated)</label>
-                <input id="u_countries" type="text" placeholder="Leave blank to keep existing" />
-              </div>
-              <div class="form-group full">
-                <label>Replace Images (optional)</label>
-                <div class="file-input-wrapper">
-                  <input type="file" id="u_images" multiple accept="image/*" onchange="updateFileLabel('u_images','u_file_label')" />
-                  <div class="file-label" id="u_file_label">
-                    <span>Browse</span> or drop new images here
-                  </div>
+            <!-- Token status -->
+            <div id="token-status" class="mx-4 mt-4 p-4 bg-zinc-800 rounded-3xl text-sm">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-circle text-red-400" id="token-dot"></i>
+                        <span id="token-text" class="font-medium">Déconnecté</span>
+                    </div>
+                    <button onclick="logout()"
+                            class="text-xs px-3 py-1 bg-zinc-700 hover:bg-rose-600 rounded-2xl transition-colors">
+                        Déconnexion
+                    </button>
                 </div>
-              </div>
-            </div>
-            <div class="btn-row">
-              <button class="btn btn-primary" onclick="updateProduct()">
-                <div class="spinner" id="spinner-update"></div>
-                ✦ Update Product
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- LIST ALL -->
-      <div class="tab-pane" id="pane-list">
-        <div class="card">
-          <div class="card-header">
-            <span class="method-badge GET">GET</span>
-            <h3>All Products</h3>
-            <span class="endpoint-path">/api/v0/product/all</span>
-          </div>
-          <div class="card-body">
-            <div class="btn-row" style="margin-top:0;margin-bottom:1rem">
-              <button class="btn btn-success" onclick="fetchAllProducts()">
-                <div class="spinner" id="spinner-list"></div>
-                ↻ Fetch All Products
-              </button>
-            </div>
-            <div id="products-grid-container">
-              <div class="empty-state">
-                <div class="icon">📦</div>
-                <p>Click "Fetch All Products" to load</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- GET BY ID -->
-      <div class="tab-pane" id="pane-getone">
-        <div class="card">
-          <div class="card-header">
-            <span class="method-badge GET">GET</span>
-            <h3>Get Product by ID</h3>
-            <span class="endpoint-path">/api/v0/product/{idProd}</span>
-          </div>
-          <div class="card-body">
-            <div class="form-grid">
-              <div class="form-group">
-                <label>Product ID</label>
-                <input id="get_id" type="number" placeholder="1" />
-              </div>
-            </div>
-            <div class="btn-row">
-              <button class="btn btn-success" onclick="getProductById()">
-                <div class="spinner" id="spinner-getone"></div>
-                ↻ Fetch
-              </button>
-            </div>
-            <div id="single-product-result" style="margin-top:1rem"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- SEARCH -->
-      <div class="tab-pane" id="pane-search">
-        <div class="card">
-          <div class="card-header">
-            <span class="method-badge GET">GET</span>
-            <h3>Search Product by Name</h3>
-            <span class="endpoint-path">/api/v0/product/search?prodName=...</span>
-          </div>
-          <div class="card-body">
-            <div class="form-grid">
-              <div class="form-group">
-                <label>Product Name</label>
-                <input id="search_name" type="text" placeholder="Katana" />
-              </div>
-            </div>
-            <div class="btn-row">
-              <button class="btn btn-success" onclick="searchProduct()">
-                <div class="spinner" id="spinner-search"></div>
-                ↻ Search
-              </button>
-            </div>
-            <div id="search-result" style="margin-top:1rem"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ═══ FILES SECTION ═══ -->
-    <div id="section-files" class="section">
-      <div class="section-title">🖼 Files</div>
-
-      <div class="tabs">
-        <div class="tab active" id="tab-file-upload" onclick="switchTab('tab-file-upload')">Upload</div>
-        <div class="tab" id="tab-file-get" onclick="switchTab('tab-file-get')">Serve</div>
-        <div class="tab" id="tab-file-meta" onclick="switchTab('tab-file-meta')">Metadata</div>
-        <div class="tab" id="tab-file-delete" onclick="switchTab('tab-file-delete')">Delete</div>
-        <div class="tab" id="tab-file-product" onclick="switchTab('tab-file-product')">By Product</div>
-      </div>
-
-      <!-- UPLOAD -->
-      <div class="tab-pane active" id="pane-file-upload">
-        <div class="card">
-          <div class="card-header">
-            <span class="method-badge POST">POST</span>
-            <h3>Upload File</h3>
-            <span class="endpoint-path">/file/upload</span>
-          </div>
-          <div class="card-body">
-            <div class="form-grid">
-              <div class="form-group">
-                <label>Product ID (optional)</label>
-                <input id="f_productId" type="number" placeholder="Link to product" />
-              </div>
-              <div class="form-group full">
-                <label>Image File</label>
-                <div class="file-input-wrapper">
-                  <input type="file" id="f_file" accept="image/*" onchange="updateFileLabel('f_file','f_file_label'); previewUpload()" />
-                  <div class="file-label" id="f_file_label"><span>Browse</span> or drop image here</div>
+                <div id="user-info" class="mt-3 text-xs text-zinc-400 hidden">
+                    <div id="current-user-name"></div>
+                    <div id="current-user-role" class="inline-block px-2 py-px bg-amber-500 text-white rounded-xl text-[10px] mt-1"></div>
                 </div>
-              </div>
-              <div class="form-group full">
-                <div id="upload-preview" style="display:none">
-                  <label>Preview</label>
-                  <img id="upload-preview-img" style="max-height:120px;border-radius:8px;border:1px solid var(--border);margin-top:6px" />
+            </div>
+
+            <!-- Navigation -->
+            <nav class="flex-1 overflow-y-auto px-3 py-6 space-y-1">
+                <a onclick="setActiveTab(0)" class="tab flex items-center gap-3 px-4 py-3 rounded-3xl hover:bg-zinc-800 text-sm font-medium cursor-pointer tab-active" id="tab-0">
+                    <i class="fa-solid fa-right-to-bracket w-5"></i>
+                    Authentification
+                </a>
+                <a onclick="setActiveTab(1)" class="tab flex items-center gap-3 px-4 py-3 rounded-3xl hover:bg-zinc-800 text-sm font-medium cursor-pointer" id="tab-1">
+                    <i class="fa-solid fa-users w-5"></i>
+                    Utilisateurs
+                </a>
+                <a onclick="setActiveTab(2)" class="tab flex items-center gap-3 px-4 py-3 rounded-3xl hover:bg-zinc-800 text-sm font-medium cursor-pointer" id="tab-2">
+                    <i class="fa-solid fa-box w-5"></i>
+                    Produits
+                </a>
+                <a onclick="setActiveTab(3)" class="tab flex items-center gap-3 px-4 py-3 rounded-3xl hover:bg-zinc-800 text-sm font-medium cursor-pointer" id="tab-3">
+                    <i class="fa-solid fa-tags w-5"></i>
+                    Catégories
+                </a>
+                <a onclick="setActiveTab(4)" class="tab flex items-center gap-3 px-4 py-3 rounded-3xl hover:bg-zinc-800 text-sm font-medium cursor-pointer" id="tab-4">
+                    <i class="fa-solid fa-globe w-5"></i>
+                    Pays
+                </a>
+                <a onclick="setActiveTab(5)" class="tab flex items-center gap-3 px-4 py-3 rounded-3xl hover:bg-zinc-800 text-sm font-medium cursor-pointer" id="tab-5">
+                    <i class="fa-solid fa-images w-5"></i>
+                    Fichiers / Images
+                </a>
+                <a onclick="setActiveTab(6)" class="tab flex items-center gap-3 px-4 py-3 rounded-3xl hover:bg-zinc-800 text-sm font-medium cursor-pointer" id="tab-6">
+                    <i class="fa-solid fa-cart-plus w-5"></i>
+                    Achats
+                </a>
+                <a onclick="setActiveTab(7)" class="tab flex items-center gap-3 px-4 py-3 rounded-3xl hover:bg-zinc-800 text-sm font-medium cursor-pointer" id="tab-7">
+                    <i class="fa-solid fa-receipt w-5"></i>
+                    Ventes
+                </a>
+            </nav>
+
+            <div class="p-4 border-t border-zinc-800 text-xs text-zinc-500 flex items-center gap-2">
+                <div class="flex-1">Backend :</div>
+                <div class="font-mono bg-zinc-800 px-2 py-1 rounded-2xl">http://localhost:8080</div>
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <!-- Header -->
+            <header class="h-14 border-b border-zinc-800 bg-zinc-900 px-8 flex items-center justify-between">
+                <div id="page-title" class="text-2xl font-semibold">Authentification</div>
+
+                <div class="flex items-center gap-4">
+                    <div onclick="copyToken()" class="flex items-center gap-2 cursor-pointer text-sm bg-zinc-800 hover:bg-zinc-700 px-4 h-9 rounded-3xl">
+                        <i class="fa-solid fa-copy"></i>
+                        <span id="token-short" class="font-mono">—</span>
+                    </div>
+                    <button onclick="setActiveTab(0)" class="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors">
+                        <i class="fa-solid fa-book"></i>
+                        <span class="text-sm">Documentation</span>
+                    </button>
                 </div>
-              </div>
-            </div>
-            <div class="btn-row">
-              <button class="btn btn-primary" onclick="uploadFile()">
-                <div class="spinner" id="spinner-file-upload"></div>
-                ↑ Upload
-              </button>
-            </div>
-            <div id="upload-result" style="margin-top:1rem"></div>
-          </div>
-        </div>
-      </div>
+            </header>
 
-      <!-- SERVE -->
-      <div class="tab-pane" id="pane-file-get">
-        <div class="card">
-          <div class="card-header">
-            <span class="method-badge GET">GET</span>
-            <h3>Serve File by ID</h3>
-            <span class="endpoint-path">/file/{fileId}</span>
-          </div>
-          <div class="card-body">
-            <div class="form-grid">
-              <div class="form-group full">
-                <label>GridFS File ID</label>
-                <input id="serve_id" type="text" placeholder="64f3a2b1c3d4e5f6a7b8c9d0" />
-              </div>
+            <!-- Content Area -->
+            <div id="content" class="flex-1 overflow-auto p-8 bg-zinc-950">
+                <!-- All tabs will be injected here by JS -->
             </div>
-            <div class="btn-row">
-              <button class="btn btn-success" onclick="serveFile()">↻ Load Image</button>
-            </div>
-            <div id="serve-result" style="margin-top:1rem"></div>
-          </div>
         </div>
-      </div>
 
-      <!-- METADATA -->
-      <div class="tab-pane" id="pane-file-meta">
-        <div class="card">
-          <div class="card-header">
-            <span class="method-badge GET">GET</span>
-            <h3>File Metadata</h3>
-            <span class="endpoint-path">/file/metadata/{fileId}</span>
-          </div>
-          <div class="card-body">
-            <div class="form-grid">
-              <div class="form-group full">
-                <label>GridFS File ID</label>
-                <input id="meta_id" type="text" placeholder="64f3a2b1c3d4e5f6a7b8c9d0" />
-              </div>
+        <!-- RIGHT PANEL : RESPONSE -->
+        <div class="w-96 border-l border-zinc-800 bg-zinc-900 flex flex-col">
+            <div class="px-6 py-4 border-b border-zinc-800 font-medium flex items-center justify-between">
+                <span>Réponse de l'API</span>
+                <button onclick="clearResponse()" class="text-xs px-3 py-1 text-zinc-400 hover:text-white">Effacer</button>
             </div>
-            <div class="btn-row">
-              <button class="btn btn-success" onclick="getFileMeta()">
-                <div class="spinner" id="spinner-meta"></div>
-                ↻ Get Metadata
-              </button>
-            </div>
-            <div id="meta-result" style="margin-top:1rem"></div>
-          </div>
-        </div>
-      </div>
 
-      <!-- DELETE -->
-      <div class="tab-pane" id="pane-file-delete">
-        <div class="card">
-          <div class="card-header">
-            <span class="method-badge DELETE">DELETE</span>
-            <h3>Delete File</h3>
-            <span class="endpoint-path">/file/{fileId}</span>
-          </div>
-          <div class="card-body">
-            <div class="form-grid">
-              <div class="form-group full">
-                <label>GridFS File ID</label>
-                <input id="del_file_id" type="text" placeholder="64f3a2b1c3d4e5f6a7b8c9d0" />
-              </div>
-            </div>
-            <div class="btn-row">
-              <button class="btn btn-danger" onclick="deleteFile()">
-                <div class="spinner" id="spinner-file-delete"></div>
-                ✕ Delete File
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+            <div id="response-panel" class="flex-1 p-6 overflow-auto">
+                <div id="response-empty" class="h-full flex flex-col items-center justify-center text-center text-zinc-500">
+                    <i class="fa-solid fa-paper-plane text-4xl mb-4 opacity-30"></i>
+                    <p class="text-sm">Aucune requête envoyée</p>
+                    <p class="text-xs mt-2">Les réponses apparaîtront ici</p>
+                </div>
 
-      <!-- BY PRODUCT -->
-      <div class="tab-pane" id="pane-file-product">
-        <div class="card">
-          <div class="card-header">
-            <span class="method-badge GET">GET</span>
-            <h3>Files by Product</h3>
-            <span class="endpoint-path">/file/product/{productId}</span>
-          </div>
-          <div class="card-body">
-            <div class="form-grid">
-              <div class="form-group">
-                <label>Product ID</label>
-                <input id="fp_id" type="number" placeholder="1" />
-              </div>
+                <div id="response-content" class="hidden">
+                    <div class="flex items-center gap-2 mb-4">
+                        <div id="response-status" class="px-3 py-1 text-xs font-mono rounded-3xl"></div>
+                        <div id="response-time" class="text-xs text-zinc-400"></div>
+                        <div id="response-method" class="text-xs text-zinc-500 font-mono ml-auto"></div>
+                    </div>
+                    <pre id="response-json" class="response-json text-xs bg-black/60 p-4 rounded-3xl overflow-auto max-h-[calc(100vh-180px)] text-emerald-300"></pre>
+                </div>
             </div>
-            <div class="btn-row">
-              <button class="btn btn-success" onclick="getFilesByProduct()">
-                <div class="spinner" id="spinner-fp"></div>
-                ↻ Load Files
-              </button>
-            </div>
-            <div id="fp-result" style="margin-top:1rem"></div>
-          </div>
         </div>
-      </div>
     </div>
 
-    <!-- ═══ CATEGORIES SECTION ═══ -->
-    <div id="section-categories" class="section">
-      <div class="section-title">🏷 Categories</div>
-      <div class="card">
-        <div class="card-header">
-          <span class="method-badge GET">GET</span>
-          <h3>All Categories</h3>
-          <span class="endpoint-path">/api/v0/categories/all</span>
-        </div>
-        <div class="card-body">
-          <div class="btn-row" style="margin-top:0;margin-bottom:1rem">
-            <button class="btn btn-success" onclick="fetchCategories()">
-              <div class="spinner" id="spinner-cat"></div>
-              ↻ Fetch Categories
-            </button>
-          </div>
-          <div id="categories-result">
-            <div class="empty-state">
-              <div class="icon">🏷</div>
-              <p>Click to load categories</p>
-            </div>
-          </div>
-        </div>
-      </div>
+    <script>
+        // ==================== CONFIG ====================
+        const BASE_URL = "http://localhost:8080";
+        let currentToken = localStorage.getItem("nipponhub_token") || null;
+        let currentRefreshToken = localStorage.getItem("nipponhub_refresh") || null;
+        let currentUser = null;
+        let activeTab = 0;
 
-      <div class="card" style="margin-top:1.25rem">
-        <div class="card-header">
-          <span class="method-badge GET">GET</span>
-          <h3>Category by ID</h3>
-          <span class="endpoint-path">/api/v0/categories/{id}</span>
-        </div>
-        <div class="card-body">
-          <div class="form-grid">
-            <div class="form-group">
-              <label>Category ID</label>
-              <input id="cat_id" type="number" placeholder="1" />
-            </div>
-          </div>
-          <div class="btn-row">
-            <button class="btn btn-success" onclick="getCategoryById()">↻ Fetch</button>
-          </div>
-          <div id="cat-single-result" style="margin-top:1rem"></div>
-        </div>
-      </div>
-    </div>
+        // ==================== UTILS ====================
+        function updateTokenUI() {
+            const dot = document.getElementById("token-dot");
+            const text = document.getElementById("token-text");
+            const short = document.getElementById("token-short");
+            const userInfo = document.getElementById("user-info");
 
-    <!-- ═══ COUNTRIES SECTION ═══ -->
-    <div id="section-countries" class="section">
-      <div class="section-title">🌍 Countries</div>
-      <div class="card">
-        <div class="card-header">
-          <span class="method-badge GET">GET</span>
-          <h3>All Countries</h3>
-          <span class="endpoint-path">/api/v0/countries/all</span>
-        </div>
-        <div class="card-body">
-          <div class="btn-row" style="margin-top:0;margin-bottom:1rem">
-            <button class="btn btn-success" onclick="fetchCountries()">
-              <div class="spinner" id="spinner-country"></div>
-              ↻ Fetch Countries
-            </button>
-          </div>
-          <div id="countries-result">
-            <div class="empty-state">
-              <div class="icon">🌍</div>
-              <p>Click to load countries</p>
-            </div>
-          </div>
-        </div>
-      </div>
+            if (currentToken) {
+                dot.classList.remove("text-red-400");
+                dot.classList.add("text-emerald-400");
+                text.textContent = "Connecté";
+                short.textContent = currentToken.substring(0, 12) + "...";
+                userInfo.classList.remove("hidden");
+                if (currentUser) {
+                    document.getElementById("current-user-name").innerHTML =
+                        `<i class="fa-solid fa-user mr-1"></i> ${currentUser.name || currentUser.email || ""}`;
+                    document.getElementById("current-user-role").textContent = currentUser.role || "USER";
+                }
+            } else {
+                dot.classList.remove("text-emerald-400");
+                dot.classList.add("text-red-400");
+                text.textContent = "Déconnecté";
+                short.textContent = "—";
+                userInfo.classList.add("hidden");
+            }
+        }
 
-      <div class="card" style="margin-top:1.25rem">
-        <div class="card-header">
-          <span class="method-badge GET">GET</span>
-          <h3>Country by ID</h3>
-          <span class="endpoint-path">/api/v0/countries/{id}</span>
-        </div>
-        <div class="card-body">
-          <div class="form-grid">
-            <div class="form-group">
-              <label>Country ID</label>
-              <input id="country_id" type="number" placeholder="1" />
-            </div>
-          </div>
-          <div class="btn-row">
-            <button class="btn btn-success" onclick="getCountryById()">↻ Fetch</button>
-          </div>
-          <div id="country-single-result" style="margin-top:1rem"></div>
-        </div>
-      </div>
-    </div>
+        function saveToken(token, refresh) {
+            currentToken = token;
+            currentRefreshToken = refresh;
+            localStorage.setItem("nipponhub_token", token);
+            if (refresh) localStorage.setItem("nipponhub_refresh", refresh);
+            updateTokenUI();
+        }
 
-  </main>
+        function logout() {
+            currentToken = null;
+            currentRefreshToken = null;
+            currentUser = null;
+            localStorage.removeItem("nipponhub_token");
+            localStorage.removeItem("nipponhub_refresh");
+            updateTokenUI();
+            setActiveTab(0);
+            showResponse({ message: "Déconnecté avec succès" }, 200, 0, "LOCAL");
+        }
 
-  <!-- ── LOG PANEL ── -->
-  <aside class="log-panel">
-    <div class="log-header">
-      <span>Response Log</span>
-      <div class="log-header-right">
-        <span class="log-count" id="log-count">0</span>
-        <button class="btn btn-secondary" style="font-size:0.65rem;padding:0.25rem 0.6rem" onclick="clearLogs()">Clear</button>
-      </div>
-    </div>
-    <div class="log-scroll" id="log-scroll">
-      <div class="empty-state" style="padding:2rem 0.5rem">
-        <div class="icon">📋</div>
-        <p>API responses will appear here</p>
-      </div>
-    </div>
-  </aside>
-</div>
+        function copyToken() {
+            if (!currentToken) return;
+            navigator.clipboard.writeText(currentToken).then(() => {
+                const el = document.getElementById("token-short");
+                const orig = el.textContent;
+                el.textContent = "Copié !";
+                setTimeout(() => el.textContent = orig, 1500);
+            });
+        }
 
-<!-- ── BASE URL MODAL ── -->
-<div class="modal-overlay" id="modal-overlay">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">⚙ API Configuration</div>
-      <button class="modal-close" onclick="closeBaseUrlModal()">✕</button>
-    </div>
-    <div class="form-group">
-      <label>Base URL</label>
-      <input id="modal-base-url" type="text" placeholder="http://localhost:8080" />
-    </div>
-    <div class="btn-row">
-      <button class="btn btn-primary" onclick="saveBaseUrl()">Save</button>
-      <button class="btn btn-secondary" onclick="closeBaseUrlModal()">Cancel</button>
-    </div>
-  </div>
-</div>
+        function showResponse(data, status = 200, time = 0, method = "") {
+            const empty = document.getElementById("response-empty");
+            const content = document.getElementById("response-content");
+            const jsonEl = document.getElementById("response-json");
+            const statusEl = document.getElementById("response-status");
+            const timeEl = document.getElementById("response-time");
+            const methodEl = document.getElementById("response-method");
 
-<!-- ── TOAST CONTAINER ── -->
-<div class="toast-container" id="toast-container"></div>
+            empty.classList.add("hidden");
+            content.classList.remove("hidden");
 
-<script>
-// ════════════════════════════════════════════════════════════
-//  CONFIG
-// ════════════════════════════════════════════════════════════
-let BASE_URL = 'http://localhost:8080';
-let logCount = 0;
-let activeSection = 'products';
+            const isOk = status >= 200 && status < 300;
+            statusEl.innerHTML = `
+                <span class="${isOk ? 'bg-emerald-500' : 'bg-rose-500'} text-white px-3 py-1 rounded-3xl text-xs font-medium">
+                    ${status || "ERR"}
+                </span>`;
+            timeEl.textContent = time ? time + " ms" : "";
+            methodEl.textContent = method;
+            jsonEl.textContent = typeof data === "string" ? data : JSON.stringify(data, null, 2);
+        }
 
-// ── Base URL modal ──
-function openBaseUrlModal() {
-  document.getElementById('modal-base-url').value = BASE_URL;
-  document.getElementById('modal-overlay').classList.add('open');
-}
-function closeBaseUrlModal() {
-  document.getElementById('modal-overlay').classList.remove('open');
-}
-function saveBaseUrl() {
-  BASE_URL = document.getElementById('modal-base-url').value.replace(/\/$/, '');
-  document.getElementById('baseUrlDisplay').textContent = BASE_URL;
-  closeBaseUrlModal();
-  toast('Base URL updated', 'success');
-}
+        function clearResponse() {
+            document.getElementById("response-empty").classList.remove("hidden");
+            document.getElementById("response-content").classList.add("hidden");
+        }
 
-// ════════════════════════════════════════════════════════════
-//  NAV
-// ════════════════════════════════════════════════════════════
-function showSection(name) {
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.getElementById('section-' + name).classList.add('active');
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  event.currentTarget.classList.add('active');
-  activeSection = name;
+        async function apiCall(endpoint, options = {}) {
+            const start = Date.now();
+            const url = BASE_URL + endpoint;
+            const headers = { ...options.headers };
+            const method = options.method || "GET";
 
-  // reset tabs to first
-  const firstTab = document.querySelector(`#section-${name} .tab`);
-  if (firstTab) switchTabEl(firstTab);
-}
+            const isPublic = endpoint.startsWith("/auth/") || endpoint.startsWith("/file/");
+            if (currentToken && !isPublic) {
+                headers["Authorization"] = `Bearer ${currentToken}`;
+            }
+            if (!(options.body instanceof FormData)) {
+                headers["Content-Type"] = "application/json";
+            }
 
-function switchTab(tabId) {
-  const tabEl = document.getElementById(tabId);
-  if (tabEl) switchTabEl(tabEl);
-}
+            try {
+                const res = await fetch(url, {
+                    method,
+                    headers: Object.keys(headers).length ? headers : undefined,
+                    body: options.body
+                });
 
-function switchTabEl(tabEl) {
-  const parent = tabEl.closest('.section') || document.body;
-  parent.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  tabEl.classList.add('active');
+                let data;
+                const ct = res.headers.get("content-type") || "";
+                if (ct.includes("application/json")) {
+                    data = await res.json();
+                } else if (ct.includes("image/")) {
+                    data = { message: "Image reçue (binaire)", url };
+                } else {
+                    data = await res.text();
+                }
 
-  const paneId = 'pane-' + tabEl.id.replace('tab-', '');
-  parent.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-  const pane = document.getElementById(paneId);
-  if (pane) pane.classList.add('active');
-}
+                const duration = Date.now() - start;
+                showResponse(data, res.status, duration, method);
 
-// ════════════════════════════════════════════════════════════
-//  UTILS
-// ════════════════════════════════════════════════════════════
-function toast(msg, type = 'info') {
-  const c = document.getElementById('toast-container');
-  const el = document.createElement('div');
-  el.className = `toast ${type}`;
-  const icon = type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ';
-  el.innerHTML = `<span>${icon}</span><span>${msg}</span>`;
-  c.appendChild(el);
-  setTimeout(() => el.remove(), 3500);
-}
+                if (res.status === 401 && currentRefreshToken && endpoint !== "/auth/refresh") {
+                    await refreshToken();
+                }
+                return { data, status: res.status };
+            } catch (err) {
+                showResponse({ error: err.message }, 0, Date.now() - start, method);
+                return { error: err.message };
+            }
+        }
 
-function log(label, data, type = 'info') {
-  const scroll = document.getElementById('log-scroll');
+        async function refreshToken() {
+            if (!currentRefreshToken) return;
+            const { data } = await apiCall("/auth/refresh", {
+                method: "POST",
+                body: JSON.stringify({ token: currentRefreshToken })
+            });
+            if (data && data.token) {
+                saveToken(data.token, data.refreshToken || currentRefreshToken);
+            }
+        }
 
-  // remove empty state
-  const empty = scroll.querySelector('.empty-state');
-  if (empty) empty.remove();
+        function setActiveTab(tabIndex) {
+            activeTab = tabIndex;
+            document.querySelectorAll(".tab").forEach((el, i) => {
+                if (i === tabIndex) el.classList.add("tab-active");
+                else el.classList.remove("tab-active");
+            });
+            renderCurrentTab();
+        }
 
-  logCount++;
-  document.getElementById('log-count').textContent = logCount;
+        // ==================== SHARED INPUT STYLE ====================
+        const inp = "bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 w-full focus:outline-none focus:border-rose-500 text-zinc-100";
+        const btn = (color) => `w-full h-12 ${color} hover:opacity-90 rounded-3xl font-medium transition-opacity`;
+        const smBtn = (color) => `px-6 h-11 ${color} hover:opacity-90 rounded-3xl font-medium transition-opacity text-sm`;
 
-  const entry = document.createElement('div');
-  entry.className = `log-entry ${type}`;
+        // ==================== TAB RENDERS ====================
+        function renderCurrentTab() {
+            const content = document.getElementById("content");
+            const title = document.getElementById("page-title");
 
-  const now = new Date().toLocaleTimeString();
-  entry.innerHTML = `
-    <div class="log-entry-header" onclick="this.nextElementSibling.classList.toggle('open')">
-      <span>${label}</span>
-      <span class="log-entry-time">${now}</span>
-    </div>
-    <div class="log-entry-body open">${typeof data === 'object' ? JSON.stringify(data, null, 2) : data}</div>
-  `;
-  scroll.prepend(entry);
-}
+            const tabs = [
+                // 0 ─ Auth
+                () => {
+                    title.textContent = "Authentification";
+                    return `
+                    <div class="max-w-3xl mx-auto">
+                        <div class="grid grid-cols-2 gap-8">
+                            <!-- Register -->
+                            <div class="bg-zinc-900 rounded-3xl p-8 space-y-4">
+                                <h2 class="text-lg font-semibold flex items-center gap-2"><i class="fa-solid fa-user-plus text-rose-400"></i> Inscription</h2>
+                                <p class="text-xs text-zinc-500">POST /auth/register</p>
+                                <input id="reg-name" placeholder="Nom complet" class="${inp}">
+                                <input id="reg-email" type="email" placeholder="Email" class="${inp}">
+                                <input id="reg-password" type="password" placeholder="Mot de passe" class="${inp}">
+                                <input id="reg-tel" type="tel" placeholder="Téléphone (+237...)" class="${inp}">
+                                <select id="reg-role" class="${inp}">
+                                    <option value="">Rôle par défaut (USER)</option>
+                                    <option value="ADMIN">ADMIN</option>
+                                    <option value="USER">USER</option>
+                                    <option value="CUSTOMER">CUSTOMER</option>
+                                    <option value="PARTNER">PARTNER</option>
+                                    <option value="GUEST">GUEST</option>
+                                </select>
+                                <div>
+                                    <label class="text-xs text-zinc-400 block mb-2">Photo de profil (optionnel — image/*)</label>
+                                    <input type="file" id="reg-image" accept="image/*" class="block w-full text-sm text-zinc-400
+                                        file:mr-4 file:py-2 file:px-5 file:rounded-2xl file:border-0
+                                        file:text-sm file:font-medium file:bg-rose-600 file:text-white">
+                                </div>
+                                <button onclick="handleRegister()" class="${btn('bg-rose-600')}">Créer le compte</button>
+                            </div>
 
-function clearLogs() {
-  document.getElementById('log-scroll').innerHTML =
-    '<div class="empty-state" style="padding:2rem 0.5rem"><div class="icon">📋</div><p>Cleared</p></div>';
-  logCount = 0;
-  document.getElementById('log-count').textContent = '0';
-}
+                            <!-- Login + Refresh -->
+                            <div class="space-y-6">
+                                <div class="bg-zinc-900 rounded-3xl p-8 space-y-4">
+                                    <h2 class="text-lg font-semibold flex items-center gap-2"><i class="fa-solid fa-right-to-bracket text-emerald-400"></i> Connexion</h2>
+                                    <p class="text-xs text-zinc-500">POST /auth/login</p>
+                                    <input id="login-email" type="email" value="alice@example.com" placeholder="Email" class="${inp}">
+                                    <input id="login-password" type="password" value="secret123" placeholder="Mot de passe" class="${inp}">
+                                    <button onclick="handleLogin()" class="${btn('bg-emerald-600')}">Se connecter</button>
+                                </div>
 
-function spin(id, on) {
-  const el = document.getElementById('spinner-' + id);
-  if (el) el.style.display = on ? 'block' : 'none';
-}
+                                <div class="bg-zinc-900 rounded-3xl p-8 space-y-4">
+                                    <h2 class="text-lg font-semibold flex items-center gap-2"><i class="fa-solid fa-rotate text-amber-400"></i> Rafraîchir le token</h2>
+                                    <p class="text-xs text-zinc-500">POST /auth/refresh</p>
+                                    <input id="refresh-token-input" placeholder="refreshToken (auto si connecté)" class="${inp}">
+                                    <button onclick="handleRefresh()" class="${btn('bg-amber-500')}">Rafraîchir</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+                },
 
-function updateFileLabel(inputId, labelId) {
-  const input = document.getElementById(inputId);
-  const label = document.getElementById(labelId);
-  if (!input || !label) return;
-  const files = input.files;
-  label.innerHTML = files.length > 1
-    ? `<span>${files.length} files</span> selected`
-    : `<span>${files[0]?.name || 'Browse'}</span> selected`;
-}
+                // 1 ─ Users
+                () => {
+                    title.textContent = "Gestion des Utilisateurs";
+                    return `
+                    <div class="max-w-5xl mx-auto space-y-6">
+                        <!-- Quick actions -->
+                        <div class="grid grid-cols-3 gap-4">
+                            <button onclick="getProfile()" class="bg-zinc-900 hover:bg-zinc-800 rounded-3xl px-6 py-5 text-left">
+                                <i class="fa-solid fa-id-card text-xl mb-2 text-rose-400 block"></i>
+                                <div class="font-medium text-sm">Mon profil</div>
+                                <div class="text-xs text-zinc-500">GET /api/adminuser/get-profile</div>
+                            </button>
+                            <button onclick="getAllUsers()" class="bg-zinc-900 hover:bg-zinc-800 rounded-3xl px-6 py-5 text-left">
+                                <i class="fa-solid fa-users text-xl mb-2 text-sky-400 block"></i>
+                                <div class="font-medium text-sm">Tous les utilisateurs</div>
+                                <div class="text-xs text-zinc-500">GET /api/admin/get-all-users</div>
+                            </button>
+                            <button onclick="greetings()" class="bg-zinc-900 hover:bg-zinc-800 rounded-3xl px-6 py-5 text-left">
+                                <i class="fa-solid fa-heart-pulse text-xl mb-2 text-emerald-400 block"></i>
+                                <div class="font-medium text-sm">Health check</div>
+                                <div class="text-xs text-zinc-500">GET /api/v0/product/greetings</div>
+                            </button>
+                        </div>
 
-function previewUpload() {
-  const input = document.getElementById('f_file');
-  const preview = document.getElementById('upload-preview');
-  const img = document.getElementById('upload-preview-img');
-  if (input.files && input.files[0]) {
-    img.src = URL.createObjectURL(input.files[0]);
-    preview.style.display = 'block';
-  }
-}
+                        <div class="grid grid-cols-2 gap-6">
+                            <!-- Get by ID -->
+                            <div class="bg-zinc-900 rounded-3xl p-6 space-y-4">
+                                <h3 class="font-medium flex items-center gap-2"><i class="fa-solid fa-magnifying-glass text-sky-400"></i> Chercher un utilisateur par ID</h3>
+                                <p class="text-xs text-zinc-500">GET /api/user/get-users/{userId} — ADMIN</p>
+                                <input id="user-id-input" type="number" value="1" placeholder="userId" class="${inp}">
+                                <button onclick="getUserById()" class="${btn('bg-sky-700')}">Chercher</button>
+                            </div>
 
-function resetForm(type) {
-  if (type === 'create') {
-    ['c_name','c_unitPrice','c_soldPrice','c_qty','c_category','c_countries'].forEach(id => {
-      document.getElementById(id).value = '';
-    });
-    document.getElementById('c_file_label').innerHTML = '<span>Browse</span> or drop images here';
-  }
-}
+                            <!-- Get by role -->
+                            <div class="bg-zinc-900 rounded-3xl p-6 space-y-4">
+                                <h3 class="font-medium flex items-center gap-2"><i class="fa-solid fa-filter text-violet-400"></i> Utilisateurs par rôle</h3>
+                                <p class="text-xs text-zinc-500">GET /api/admin/users/{role} — ADMIN</p>
+                                <select id="filter-role" class="${inp}">
+                                    <option value="ADMIN">ADMIN</option>
+                                    <option value="USER" selected>USER</option>
+                                    <option value="CUSTOMER">CUSTOMER</option>
+                                    <option value="PARTNER">PARTNER</option>
+                                    <option value="GUEST">GUEST</option>
+                                </select>
+                                <button onclick="getUsersByRole()" class="${btn('bg-violet-600')}">Filtrer</button>
+                            </div>
 
-function renderProductCard(p) {
-  const images = p.prodUrl || [];
-  const imgHtml = images.length
-    ? `<img class="product-img" src="${BASE_URL}/file/${images[0]}" alt="${p.prodName}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
-       <div class="product-img-placeholder" style="display:none">🖼</div>`
-    : `<div class="product-img-placeholder">🖼</div>`;
+                            <!-- Delete user -->
+                            <div class="bg-zinc-900 rounded-3xl p-6 space-y-4">
+                                <h3 class="font-medium flex items-center gap-2"><i class="fa-solid fa-trash text-rose-400"></i> Supprimer un utilisateur</h3>
+                                <p class="text-xs text-zinc-500">DELETE /api/admin/delete/{userId} — ADMIN</p>
+                                <input id="delete-user-id" type="number" placeholder="userId à supprimer" class="${inp}">
+                                <button onclick="deleteUser()" class="${btn('bg-rose-700')}">Supprimer</button>
+                            </div>
 
-  const countries = (p.countries || []).map(c => `<span class="tag">${c.countryName || c}</span>`).join('');
-  const category = p.categoriesProd?.catProdName || p.category || '—';
+                            <!-- Update profile -->
+                            <div class="bg-zinc-900 rounded-3xl p-6 space-y-4">
+                                <h3 class="font-medium flex items-center gap-2"><i class="fa-solid fa-pen-to-square text-amber-400"></i> Modifier mon profil</h3>
+                                <p class="text-xs text-zinc-500">PUT /api/user/update — champs optionnels</p>
+                                <input id="upd-name" placeholder="Nouveau nom (optionnel)" class="${inp}">
+                                <input id="upd-email" type="email" placeholder="Nouvel email (optionnel)" class="${inp}">
+                                <input id="upd-password" type="password" placeholder="Nouveau mot de passe (optionnel)" class="${inp}">
+                                <input id="upd-tel" placeholder="Nouveau téléphone (optionnel)" class="${inp}">
+                                <select id="upd-role" class="${inp}">
+                                    <option value="">Rôle inchangé</option>
+                                    <option value="ADMIN">ADMIN</option>
+                                    <option value="USER">USER</option>
+                                    <option value="CUSTOMER">CUSTOMER</option>
+                                    <option value="PARTNER">PARTNER</option>
+                                    <option value="GUEST">GUEST</option>
+                                </select>
+                                <div>
+                                    <label class="text-xs text-zinc-400 block mb-1">Nouvelle photo (optionnel)</label>
+                                    <input type="file" id="upd-file" accept="image/*" class="text-sm text-zinc-400
+                                        file:mr-3 file:py-2 file:px-4 file:rounded-2xl file:border-0
+                                        file:text-xs file:font-medium file:bg-amber-500 file:text-white">
+                                </div>
+                                <button onclick="updateProfile()" class="${btn('bg-amber-500')}">Mettre à jour</button>
+                            </div>
+                        </div>
+                    </div>`;
+                },
 
-  return `
-    <div class="product-card">
-      ${imgHtml}
-      <div class="product-info">
-        <div class="product-name">${p.prodName || '—'}</div>
-        <div class="product-meta">
-          <span class="tag">${category}</span>
-          ${countries}
-        </div>
-        <div class="price">¥${p.soldPrice ?? '—'} <span style="color:var(--muted);text-decoration:line-through;font-size:0.65rem">¥${p.unitPrice ?? ''}</span></div>
-        <div style="font-family:var(--mono);font-size:0.65rem;color:var(--muted);margin-top:3px">Qty: ${p.prodQty ?? '—'} · ID: ${p.idProd}</div>
-        ${images.length > 1 ? `<div class="image-gallery">${images.slice(1).map(id =>
-          `<img class="gallery-img" src="${BASE_URL}/file/${id}" alt="img" onerror="this.style.display='none'" />`
-        ).join('')}</div>` : ''}
-        <div class="product-actions">
-          <button class="btn btn-secondary" onclick="prefillUpdate(${JSON.stringify(p).replace(/"/g,"&quot;")})">Edit</button>
-          <button class="btn btn-danger" onclick="deleteProductPrompt(${p.idProd})">✕</button>
-        </div>
-      </div>
-    </div>`;
-}
+                // 2 ─ Produits
+                () => {
+                    title.textContent = "Produits";
+                    return `
+                    <div class="max-w-5xl mx-auto space-y-6">
+                        <!-- Create product -->
+                        <div class="bg-zinc-900 rounded-3xl p-8">
+                            <h3 class="font-medium mb-4 flex items-center gap-2"><i class="fa-solid fa-plus text-emerald-400"></i> Créer un produit</h3>
+                            <p class="text-xs text-zinc-500 mb-4">POST /api/v0/product/newProduct</p>
+                            <div class="grid grid-cols-2 gap-4">
+                                <input id="prod-name" placeholder="Nom du produit *" class="${inp} col-span-2">
+                                <input id="prod-unitprice" type="number" step="0.01" value="10" placeholder="Prix d'achat (UnitPrice) *" class="${inp}">
+                                <input id="prod-soldprice" type="number" step="0.01" value="15" placeholder="Prix de vente (SoldPrice) *" class="${inp}">
+                                <input id="prod-qty" type="number" value="20" placeholder="Quantité (ProdQty) *" class="${inp}">
+                                <input id="prod-category" placeholder="Catégorie (ex: Bags) *" class="${inp}">
+                                <textarea id="prod-desc" rows="2" placeholder="Description *" class="${inp} col-span-2"></textarea>
+                                <input id="prod-country" placeholder="Pays séparés par virgule (ex: Japan, France) *" class="${inp} col-span-2">
+                                <div class="col-span-2">
+                                    <label class="block text-xs text-zinc-400 mb-2">Images du produit (optionnel — image/*)</label>
+                                    <input type="file" id="prod-images" multiple accept="image/*" class="text-sm text-zinc-400
+                                        file:mr-3 file:py-2 file:px-4 file:rounded-2xl file:border-0
+                                        file:text-xs file:font-medium file:bg-emerald-600 file:text-white">
+                                </div>
+                                <button onclick="createProduct()" class="${btn('bg-emerald-600')} col-span-2">Créer le produit</button>
+                            </div>
+                        </div>
 
-function prefillUpdate(p) {
-  document.getElementById('u_id').value = p.idProd || '';
-  document.getElementById('u_name').value = p.prodName || '';
-  document.getElementById('u_unitPrice').value = p.unitPrice || '';
-  document.getElementById('u_soldPrice').value = p.soldPrice || '';
-  document.getElementById('u_qty').value = p.prodQty || '';
-  document.getElementById('u_category').value = p.categoriesProd?.catProdName || '';
-  document.getElementById('u_countries').value = (p.countries || []).map(c => c.countryName || c).join(', ');
-  switchTab('tab-update');
-  toast('Product loaded for editing', 'info');
-}
+                        <!-- Update product -->
+                        <div class="bg-zinc-900 rounded-3xl p-8">
+                            <h3 class="font-medium mb-4 flex items-center gap-2"><i class="fa-solid fa-pen text-amber-400"></i> Modifier un produit</h3>
+                            <p class="text-xs text-zinc-500 mb-4">PUT /api/v0/product/updateProduct/{idProd} — champs optionnels</p>
+                            <div class="grid grid-cols-2 gap-4">
+                                <input id="upd-prod-id" type="number" value="1" placeholder="idProd *" class="${inp} col-span-2">
+                                <input id="upd-prod-name" placeholder="Nouveau nom (optionnel)" class="${inp}">
+                                <input id="upd-prod-unitprice" type="number" step="0.01" placeholder="Nouveau prix d'achat" class="${inp}">
+                                <input id="upd-prod-soldprice" type="number" step="0.01" placeholder="Nouveau prix de vente" class="${inp}">
+                                <input id="upd-prod-qty" type="number" placeholder="Nouvelle quantité" class="${inp}">
+                                <input id="upd-prod-category" placeholder="Nouvelle catégorie" class="${inp}">
+                                <input id="upd-prod-country" placeholder="Nouveaux pays (virgule)" class="${inp}">
+                                <textarea id="upd-prod-desc" rows="2" placeholder="Nouvelle description" class="${inp} col-span-2"></textarea>
+                                <div class="col-span-2">
+                                    <label class="block text-xs text-zinc-400 mb-2">Nouvelles images (remplace les anciennes)</label>
+                                    <input type="file" id="upd-prod-images" multiple accept="image/*" class="text-sm text-zinc-400
+                                        file:mr-3 file:py-2 file:px-4 file:rounded-2xl file:border-0
+                                        file:text-xs file:font-medium file:bg-amber-500 file:text-white">
+                                </div>
+                                <button onclick="updateProduct()" class="${btn('bg-amber-500')} col-span-2">Mettre à jour le produit</button>
+                            </div>
+                        </div>
 
-async function deleteProductPrompt(id) {
-  if (!confirm(`Delete product ID ${id}?`)) return;
-  try {
-    const r = await fetch(`${BASE_URL}/api/v0/product/${id}`, { method: 'DELETE' });
-    if (r.ok) { toast('Product deleted', 'success'); fetchAllProducts(); }
-    else { toast('Delete failed', 'error'); }
-  } catch(e) { toast('Error: ' + e.message, 'error'); }
-}
+                        <!-- Quick lookups -->
+                        <div class="grid grid-cols-2 gap-6">
+                            <div class="bg-zinc-900 rounded-3xl p-6 space-y-4">
+                                <h3 class="font-medium text-sm flex items-center gap-2"><i class="fa-solid fa-hashtag text-sky-400"></i> Produit par ID</h3>
+                                <p class="text-xs text-zinc-500">GET /api/v0/product/{idProd}</p>
+                                <input id="get-prod-id" type="number" value="1" placeholder="idProd" class="${inp}">
+                                <button onclick="getProductById()" class="${btn('bg-sky-700')}">Chercher</button>
+                            </div>
+                            <div class="bg-zinc-900 rounded-3xl p-6 space-y-4">
+                                <h3 class="font-medium text-sm flex items-center gap-2"><i class="fa-solid fa-list text-zinc-400"></i> Tous les produits</h3>
+                                <p class="text-xs text-zinc-500">GET /api/v0/product/all</p>
+                                <button onclick="listAllProducts()" class="${btn('bg-zinc-700 mt-8')}">Lister tous</button>
+                            </div>
+                            <div class="bg-zinc-900 rounded-3xl p-6 space-y-4">
+                                <h3 class="font-medium text-sm flex items-center gap-2"><i class="fa-solid fa-magnifying-glass text-violet-400"></i> Chercher par nom</h3>
+                                <p class="text-xs text-zinc-500">GET /api/v0/product/searchByName?prodName=</p>
+                                <input id="search-prod-name" placeholder="Nom du produit" class="${inp}">
+                                <button onclick="searchProductByName()" class="${btn('bg-violet-600')}">Chercher</button>
+                            </div>
+                            <div class="bg-zinc-900 rounded-3xl p-6 space-y-4">
+                                <h3 class="font-medium text-sm flex items-center gap-2"><i class="fa-solid fa-globe text-teal-400"></i> Chercher par pays</h3>
+                                <p class="text-xs text-zinc-500">GET /api/v0/product/searchByCountry?country=</p>
+                                <input id="search-prod-country" placeholder="Nom du pays" class="${inp}">
+                                <button onclick="searchProductByCountry()" class="${btn('bg-teal-600')}">Chercher</button>
+                            </div>
+                        </div>
+                    </div>`;
+                },
 
-// ════════════════════════════════════════════════════════════
-//  PRODUCTS API
-// ════════════════════════════════════════════════════════════
-async function createProduct() {
-  spin('create', true);
-  try {
-    const fd = new FormData();
-    const name     = document.getElementById('c_name').value.trim();
-    const unit     = document.getElementById('c_unitPrice').value;
-    const sold     = document.getElementById('c_soldPrice').value;
-    const qty      = document.getElementById('c_qty').value;
-    const cat      = document.getElementById('c_category').value.trim();
-    const countries = document.getElementById('c_countries').value.split(',').map(s => s.trim()).filter(Boolean);
-    const files    = document.getElementById('c_images').files;
+                // 3 ─ Catégories
+                () => {
+                    title.textContent = "Catégories";
+                    return `
+                    <div class="max-w-xl mx-auto space-y-6">
+                        <!-- Create -->
+                        <div class="bg-zinc-900 rounded-3xl p-8 space-y-4">
+                            <h3 class="font-medium flex items-center gap-2"><i class="fa-solid fa-plus text-violet-400"></i> Créer une catégorie</h3>
+                            <p class="text-xs text-zinc-500">POST /api/v0/categories/createCategory</p>
+                            <input id="cat-name" placeholder="Nom de la catégorie (catProdName) *" class="${inp}">
+                            <textarea id="cat-desc" rows="3" placeholder="Description (catProdDes)" class="${inp}"></textarea>
+                            <button onclick="createCategory()" class="${btn('bg-violet-600')}">Créer catégorie</button>
+                        </div>
 
-    if (!name) { toast('Product name is required', 'error'); return; }
+                        <!-- List all -->
+                        <div class="bg-zinc-900 rounded-3xl p-8">
+                            <h3 class="font-medium flex items-center gap-2 mb-2"><i class="fa-solid fa-list text-zinc-400"></i> Toutes les catégories</h3>
+                            <p class="text-xs text-zinc-500 mb-4">GET /api/v0/categories/getAllCategories</p>
+                            <button onclick="getAllCategories()" class="${btn('bg-zinc-700')}">Voir toutes les catégories</button>
+                        </div>
 
-    fd.append('ProdName', name);
-    if (unit) fd.append('UnitPrice', unit);
-    if (sold) fd.append('SoldPrice', sold);
-    if (qty)  fd.append('ProdQty', qty);
-    if (cat)  fd.append('category', cat);
-    countries.forEach(c => fd.append('Country', c));
-    Array.from(files).forEach(f => fd.append('ProdUrl', f));
+                        <!-- Get by ID -->
+                        <div class="bg-zinc-900 rounded-3xl p-8 space-y-4">
+                            <h3 class="font-medium flex items-center gap-2"><i class="fa-solid fa-hashtag text-sky-400"></i> Catégorie par ID</h3>
+                            <p class="text-xs text-zinc-500">GET /api/v0/categories/{id}</p>
+                            <input id="cat-id" type="number" value="1" placeholder="id de la catégorie" class="${inp}">
+                            <button onclick="getCategoryById()" class="${btn('bg-sky-700')}">Chercher</button>
+                        </div>
+                    </div>`;
+                },
 
-    const res = await fetch(`${BASE_URL}/api/v0/product/newProduct`, { method: 'POST', body: fd });
-    const data = await res.json();
+                // 4 ─ Pays
+                () => {
+                    title.textContent = "Pays";
+                    return `
+                    <div class="max-w-xl mx-auto space-y-6">
+                        <!-- Create -->
+                        <div class="bg-zinc-900 rounded-3xl p-8 space-y-4">
+                            <h3 class="font-medium flex items-center gap-2"><i class="fa-solid fa-plus text-sky-400"></i> Créer un pays</h3>
+                            <p class="text-xs text-zinc-500">POST /api/v0/country/newCountry</p>
+                            <input id="country-name" placeholder="Nom du pays (countryName)" class="${inp}">
+                            <input id="country-code" placeholder="Code ISO-2 (ex: JP)" maxlength="2" class="${inp}">
+                            <button onclick="createCountry()" class="${btn('bg-sky-600')}">Créer pays</button>
+                        </div>
 
-    if (res.ok) {
-      log('POST /newProduct → 201', data, 'success');
-      toast('Product created!', 'success');
-      resetForm('create');
-    } else {
-      log('POST /newProduct → ' + res.status, data, 'error');
-      toast(data.error || 'Creation failed', 'error');
-    }
-  } catch(e) {
-    log('POST /newProduct ERROR', e.message, 'error');
-    toast('Network error: ' + e.message, 'error');
-  } finally { spin('create', false); }
-}
+                        <!-- List all -->
+                        <div class="bg-zinc-900 rounded-3xl p-8">
+                            <h3 class="font-medium flex items-center gap-2 mb-2"><i class="fa-solid fa-list text-zinc-400"></i> Tous les pays</h3>
+                            <p class="text-xs text-zinc-500 mb-4">GET /api/v0/country/getAllCountries</p>
+                            <button onclick="getAllCountries()" class="${btn('bg-zinc-700')}">Lister tous les pays</button>
+                        </div>
 
-async function updateProduct() {
-  spin('update', true);
-  try {
-    const id = document.getElementById('u_id').value;
-    if (!id) { toast('Product ID is required', 'error'); return; }
+                        <!-- Delete -->
+                        <div class="bg-zinc-900 rounded-3xl p-8 space-y-4">
+                            <h3 class="font-medium flex items-center gap-2"><i class="fa-solid fa-trash text-rose-400"></i> Supprimer un pays</h3>
+                            <p class="text-xs text-zinc-500">DELETE /api/v0/country/deleteCountry?idCountry= <span class="text-amber-400">(⚠ query param, pas path)</span></p>
+                            <input id="delete-country-id" type="number" placeholder="idCountry" class="${inp}">
+                            <button onclick="deleteCountry()" class="${btn('bg-rose-700')}">Supprimer</button>
+                        </div>
+                    </div>`;
+                },
 
-    const fd = new FormData();
-    const name     = document.getElementById('u_name').value.trim();
-    const unit     = document.getElementById('u_unitPrice').value;
-    const sold     = document.getElementById('u_soldPrice').value;
-    const qty      = document.getElementById('u_qty').value;
-    const cat      = document.getElementById('u_category').value.trim();
-    const countries = document.getElementById('u_countries').value.split(',').map(s => s.trim()).filter(Boolean);
-    const files    = document.getElementById('u_images').files;
+                // 5 ─ Fichiers
+                () => {
+                    title.textContent = "Fichiers & Images";
+                    return `
+                    <div class="max-w-4xl mx-auto space-y-6">
+                        <div class="grid grid-cols-2 gap-6">
+                            <!-- Upload single -->
+                            <div class="bg-zinc-900 rounded-3xl p-8 space-y-4">
+                                <h3 class="font-medium flex items-center gap-2"><i class="fa-solid fa-upload text-amber-400"></i> Upload simple</h3>
+                                <p class="text-xs text-zinc-500">POST /file/upload</p>
+                                <input type="file" id="single-file" accept="image/*" class="text-sm text-zinc-400
+                                    file:mr-3 file:py-2 file:px-4 file:rounded-2xl file:border-0
+                                    file:text-xs file:font-medium file:bg-amber-500 file:text-white">
+                                <input id="file-product-id" placeholder="productId (optionnel)" class="${inp}">
+                                <button onclick="uploadSingleFile()" class="${btn('bg-amber-500')}">Uploader</button>
+                            </div>
 
-    if (name) fd.append('ProdName', name);
-    if (unit) fd.append('UnitPrice', unit);
-    if (sold) fd.append('SoldPrice', sold);
-    if (qty)  fd.append('ProdQty', qty);
-    if (cat)  fd.append('category', cat);
-    countries.forEach(c => fd.append('Country', c));
-    Array.from(files).forEach(f => fd.append('ProdUrl', f));
+                            <!-- Upload batch -->
+                            <div class="bg-zinc-900 rounded-3xl p-8 space-y-4">
+                                <h3 class="font-medium flex items-center gap-2"><i class="fa-solid fa-layer-group text-amber-400"></i> Upload multiple</h3>
+                                <p class="text-xs text-zinc-500">POST /file/upload/batch</p>
+                                <input type="file" id="batch-files" multiple accept="image/*" class="text-sm text-zinc-400
+                                    file:mr-3 file:py-2 file:px-4 file:rounded-2xl file:border-0
+                                    file:text-xs file:font-medium file:bg-amber-500 file:text-white">
+                                <input id="batch-product-id" placeholder="productId (optionnel, lie tous les fichiers)" class="${inp}">
+                                <button onclick="uploadBatchFiles()" class="${btn('bg-amber-500')}">Uploader plusieurs</button>
+                            </div>
+                        </div>
 
-    const res = await fetch(`${BASE_URL}/api/v0/product/updateProduct/${id}`, { method: 'PUT', body: fd });
-    const data = await res.json();
+                        <!-- Actions on a file -->
+                        <div class="bg-zinc-900 rounded-3xl p-8 space-y-4">
+                            <h3 class="font-medium flex items-center gap-2"><i class="fa-solid fa-file-image text-sky-400"></i> Opérations sur un fichier (par fileId)</h3>
+                            <p class="text-xs text-zinc-500">GET /file/{fileId} • GET /file/metadata/{fileId} • DELETE /file/{fileId}</p>
+                            <input id="view-file-id" placeholder="fileId (ex: 6500f7b8a4440f1aaad12f65)" class="${inp}">
+                            <div class="flex gap-3">
+                                <button onclick="viewFile()" class="${smBtn('bg-emerald-600')}"><i class="fa-solid fa-eye mr-1"></i>Voir image</button>
+                                <button onclick="getFileMetadata()" class="${smBtn('bg-sky-700')}"><i class="fa-solid fa-info-circle mr-1"></i>Métadonnées</button>
+                                <button onclick="deleteFile()" class="${smBtn('bg-rose-700')}"><i class="fa-solid fa-trash mr-1"></i>Supprimer</button>
+                            </div>
+                        </div>
 
-    if (res.ok) {
-      log(`PUT /updateProduct/${id} → 200`, data, 'success');
-      toast('Product updated!', 'success');
-    } else {
-      log(`PUT /updateProduct/${id} → ` + res.status, data, 'error');
-      toast(data.message || 'Update failed', 'error');
-    }
-  } catch(e) {
-    log('PUT /updateProduct ERROR', e.message, 'error');
-    toast('Network error: ' + e.message, 'error');
-  } finally { spin('update', false); }
-}
+                        <!-- Files by product -->
+                        <div class="bg-zinc-900 rounded-3xl p-8 space-y-4">
+                            <h3 class="font-medium flex items-center gap-2"><i class="fa-solid fa-box-open text-violet-400"></i> Fichiers d'un produit</h3>
+                            <p class="text-xs text-zinc-500">GET /file/product/{productId} — tous les FileDocument liés</p>
+                            <input id="files-product-id" type="number" value="1" placeholder="productId" class="${inp}">
+                            <button onclick="getFilesByProduct()" class="${btn('bg-violet-600')}">Voir les fichiers du produit</button>
+                        </div>
+                    </div>`;
+                },
 
-async function fetchAllProducts() {
-  spin('list', true);
-  try {
-    const res = await fetch(`${BASE_URL}/api/v0/product/all`);
-    const data = await res.json();
-    log('GET /product/all → ' + res.status, data, res.ok ? 'success' : 'error');
+                // 6 ─ Achats
+                () => {
+                    title.textContent = "Achats (Purchases)";
+                    return `
+                    <div class="max-w-2xl mx-auto space-y-6">
+                        <!-- New achat -->
+                        <div class="bg-zinc-900 rounded-3xl p-8 space-y-4">
+                            <h3 class="font-medium flex items-center gap-2"><i class="fa-solid fa-cart-plus text-teal-400"></i> Nouvel achat</h3>
+                            <p class="text-xs text-zinc-500">POST /api/v0/achat/new-achat — augmente le stock</p>
+                            <p class="text-xs text-zinc-400">Le champ <code>date</code> est ignoré, il est fixé à aujourd'hui côté serveur.</p>
+                            <textarea id="achat-json" rows="9" class="w-full bg-black border border-zinc-800 font-mono text-xs text-emerald-300 p-4 rounded-3xl">{
+  "items": [
+    { "product": { "idProd": 1 }, "quantite": 10 },
+    { "product": { "idProd": 2 }, "quantite": 5 }
+  ]
+}</textarea>
+                            <button onclick="createAchat()" class="${btn('bg-teal-600')}">Enregistrer l'achat</button>
+                        </div>
 
-    const container = document.getElementById('products-grid-container');
-    if (res.ok && data.length) {
-      container.innerHTML = `<div class="products-grid">${data.map(renderProductCard).join('')}</div>`;
-      toast(`Loaded ${data.length} products`, 'success');
-    } else if (res.ok && !data.length) {
-      container.innerHTML = '<div class="empty-state"><div class="icon">📦</div><p>No products found</p></div>';
-    } else {
-      container.innerHTML = `<div class="empty-state"><div class="icon">⚠</div><p>${data.message || 'Error loading products'}</p></div>`;
-      toast('Failed to load products', 'error');
-    }
-  } catch(e) {
-    log('GET /product/all ERROR', e.message, 'error');
-    toast('Network error', 'error');
-  } finally { spin('list', false); }
-}
+                        <!-- List all -->
+                        <div class="bg-zinc-900 rounded-3xl p-8">
+                            <h3 class="font-medium flex items-center gap-2 mb-2"><i class="fa-solid fa-list text-zinc-400"></i> Tous les achats</h3>
+                            <p class="text-xs text-zinc-500 mb-4">GET /api/v0/achat/get-all-achat</p>
+                            <button onclick="getAllAchats()" class="${btn('bg-zinc-700')}">Voir tous les achats</button>
+                        </div>
+                    </div>`;
+                },
 
-async function getProductById() {
-  const id = document.getElementById('get_id').value;
-  if (!id) { toast('Enter a product ID', 'error'); return; }
-  spin('getone', true);
-  try {
-    const res = await fetch(`${BASE_URL}/api/v0/product/${id}`);
-    const data = await res.json();
-    log(`GET /product/${id} → ` + res.status, data, res.ok ? 'success' : 'error');
-    document.getElementById('single-product-result').innerHTML =
-      res.ok ? `<div class="products-grid">${renderProductCard(data)}</div>`
-            : `<div class="empty-state"><div class="icon">⚠</div><p>${data.message || 'Not found'}</p></div>`;
-    if (!res.ok) toast('Product not found', 'error');
-  } catch(e) {
-    log(`GET /product/${id} ERROR`, e.message, 'error');
-    toast('Network error', 'error');
-  } finally { spin('getone', false); }
-}
+                // 7 ─ Ventes
+                () => {
+                    title.textContent = "Ventes (Sales)";
+                    return `
+                    <div class="max-w-2xl mx-auto space-y-6">
+                        <!-- New vente -->
+                        <div class="bg-zinc-900 rounded-3xl p-8 space-y-4">
+                            <h3 class="font-medium flex items-center gap-2"><i class="fa-solid fa-receipt text-purple-400"></i> Nouvelle vente</h3>
+                            <p class="text-xs text-zinc-500">POST /api/v0/vente/register — diminue le stock, rollback si insuffisant</p>
+                            <p class="text-xs text-zinc-400"><code>prixVendu</code> optionnel. Si null/0 → prix d'achat utilisé (gain = 0).</p>
+                            <textarea id="vente-json" rows="9" class="w-full bg-black border border-zinc-800 font-mono text-xs text-emerald-300 p-4 rounded-3xl">{
+  "items": [
+    { "product": { "idProd": 1 }, "quantite": 2, "prixVendu": 20.00 }
+  ]
+}</textarea>
+                            <button onclick="createVente()" class="${btn('bg-purple-600')}">Enregistrer la vente</button>
+                        </div>
 
-async function searchProduct() {
-  const name = document.getElementById('search_name').value.trim();
-  if (!name) { toast('Enter a product name', 'error'); return; }
-  spin('search', true);
-  try {
-    const res = await fetch(`${BASE_URL}/api/v0/product/searchByName/${encodeURIComponent(name)}`);
-    const data = await res.json();
-    log(`GET /product/searchByName/${name} → ` + res.status, data, res.ok ? 'success' : 'error');
-    document.getElementById('search-result').innerHTML =
-      res.ok ? `<div class="products-grid">${renderProductCard(data)}</div>`
-             : `<div class="empty-state"><div class="icon">⚠</div><p>${data.message || 'Not found'}</p></div>`;
-    if (!res.ok) toast('Product not found', 'error');
-  } catch(e) {
-    toast('Network error', 'error');
-  } finally { spin('search', false); }
-}
+                        <!-- List all -->
+                        <div class="bg-zinc-900 rounded-3xl p-8">
+                            <h3 class="font-medium flex items-center gap-2 mb-2"><i class="fa-solid fa-list text-zinc-400"></i> Toutes les ventes</h3>
+                            <p class="text-xs text-zinc-500 mb-4">GET /api/v0/vente/all</p>
+                            <button onclick="getAllVentes()" class="${btn('bg-zinc-700')}">Voir toutes les ventes</button>
+                        </div>
 
-// ════════════════════════════════════════════════════════════
-//  FILES API
-// ════════════════════════════════════════════════════════════
-async function uploadFile() {
-  const file = document.getElementById('f_file').files[0];
-  if (!file) { toast('Select a file first', 'error'); return; }
-  spin('file-upload', true);
-  try {
-    const fd = new FormData();
-    fd.append('file', file);
-    const productId = document.getElementById('f_productId').value;
-    const url = productId ? `${BASE_URL}/file/upload?productId=${productId}` : `${BASE_URL}/file/upload`;
-    const res = await fetch(url, { method: 'POST', body: fd });
-    const data = await res.json();
-    log('POST /file/upload → ' + res.status, data, res.ok ? 'success' : 'error');
-    if (res.ok) {
-      toast('File uploaded! ID: ' + data.fileId, 'success');
-      document.getElementById('upload-result').innerHTML = `
-        <div style="font-family:var(--mono);font-size:0.75rem;padding:0.75rem;background:var(--bg);border-radius:7px;border:1px solid var(--border)">
-          <span style="color:var(--muted)">fileId: </span><span style="color:var(--green)">${data.fileId}</span>
-        </div>
-        <img src="${BASE_URL}/file/${data.fileId}" style="max-height:150px;border-radius:8px;border:1px solid var(--border);margin-top:0.75rem;display:block" />`;
-    } else {
-      toast(data.error || 'Upload failed', 'error');
-    }
-  } catch(e) {
-    log('POST /file/upload ERROR', e.message, 'error');
-    toast('Network error', 'error');
-  } finally { spin('file-upload', false); }
-}
+                        <!-- Get by ID -->
+                        <div class="bg-zinc-900 rounded-3xl p-8 space-y-4">
+                            <h3 class="font-medium flex items-center gap-2"><i class="fa-solid fa-hashtag text-sky-400"></i> Vente par ID</h3>
+                            <p class="text-xs text-zinc-500">GET /api/v0/vente/{id}</p>
+                            <input id="get-vente-id" type="number" value="1" placeholder="id de la vente" class="${inp}">
+                            <button onclick="getVenteById()" class="${btn('bg-sky-700')}">Chercher</button>
+                        </div>
 
-function serveFile() {
-  const id = document.getElementById('serve_id').value.trim();
-  if (!id) { toast('Enter a file ID', 'error'); return; }
-  const url = `${BASE_URL}/file/${id}`;
-  log(`GET /file/${id}`, 'Loading image…', 'info');
-  document.getElementById('serve-result').innerHTML = `
-    <img src="${url}" style="max-height:300px;border-radius:10px;border:1px solid var(--border);display:block"
-         onerror="this.style.display='none';document.getElementById('serve-err').style.display='block'" />
-    <div id="serve-err" style="display:none" class="empty-state"><div class="icon">⚠</div><p>Image not found or invalid ID</p></div>`;
-}
+                        <!-- Search by date -->
+                        <div class="bg-zinc-900 rounded-3xl p-8 space-y-4">
+                            <h3 class="font-medium flex items-center gap-2"><i class="fa-solid fa-calendar-day text-amber-400"></i> Ventes par date</h3>
+                            <p class="text-xs text-zinc-500">GET /api/v0/vente/search?date=YYYY-MM-DD</p>
+                            <input id="search-vente-date" type="date" class="${inp}">
+                            <button onclick="searchVenteByDate()" class="${btn('bg-amber-500')}">Rechercher</button>
+                        </div>
+                    </div>`;
+                }
+            ];
 
-async function getFileMeta() {
-  const id = document.getElementById('meta_id').value.trim();
-  if (!id) { toast('Enter a file ID', 'error'); return; }
-  spin('meta', true);
-  try {
-    const res = await fetch(`${BASE_URL}/file/metadata/${id}`);
-    const data = await res.json();
-    log(`GET /file/metadata/${id} → ` + res.status, data, res.ok ? 'success' : 'error');
-    if (res.ok) {
-      document.getElementById('meta-result').innerHTML = `
-        <div style="font-family:var(--mono);font-size:0.73rem;padding:1rem;background:var(--bg);border-radius:8px;border:1px solid var(--border);line-height:2">
-          ${Object.entries(data).map(([k,v]) =>
-            `<div><span style="color:var(--muted)">${k}: </span><span style="color:var(--blue)">${JSON.stringify(v)}</span></div>`
-          ).join('')}
-        </div>`;
-      toast('Metadata loaded', 'success');
-    } else {
-      toast('Not found', 'error');
-    }
-  } catch(e) { toast('Network error', 'error'); }
-  finally { spin('meta', false); }
-}
+            content.innerHTML = tabs[activeTab]();
 
-async function deleteFile() {
-  const id = document.getElementById('del_file_id').value.trim();
-  if (!id) { toast('Enter a file ID', 'error'); return; }
-  if (!confirm(`Delete file ${id}?`)) return;
-  spin('file-delete', true);
-  try {
-    const res = await fetch(`${BASE_URL}/file/${id}`, { method: 'DELETE' });
-    const data = await res.json();
-    log(`DELETE /file/${id} → ` + res.status, data, res.ok ? 'success' : 'error');
-    toast(res.ok ? 'File deleted' : (data.error || 'Delete failed'), res.ok ? 'success' : 'error');
-  } catch(e) { toast('Network error', 'error'); }
-  finally { spin('file-delete', false); }
-}
+            // Set today's date on the vente search input after render
+            if (activeTab === 7) {
+                const di = document.getElementById("search-vente-date");
+                if (di) di.value = new Date().toISOString().slice(0, 10);
+            }
+        }
 
-async function getFilesByProduct() {
-  const id = document.getElementById('fp_id').value;
-  if (!id) { toast('Enter a product ID', 'error'); return; }
-  spin('fp', true);
-  try {
-    const res = await fetch(`${BASE_URL}/file/product/${id}`);
-    const data = await res.json();
-    log(`GET /file/product/${id} → ` + res.status, data, res.ok ? 'success' : 'error');
-    if (res.ok && data.length) {
-      document.getElementById('fp-result').innerHTML = `
-        <div class="image-gallery" style="gap:0.75rem">
-          ${data.map(f => `
-            <div style="text-align:center">
-              <img class="gallery-img" style="width:90px;height:90px" src="${BASE_URL}/file/${f.gridFsId}" alt="${f.originalName}" />
-              <div style="font-family:var(--mono);font-size:0.6rem;color:var(--muted);margin-top:4px">${f.originalName}</div>
-            </div>`).join('')}
-        </div>`;
-      toast(`${data.length} file(s) found`, 'success');
-    } else {
-      document.getElementById('fp-result').innerHTML = '<div class="empty-state"><div class="icon">🖼</div><p>No files for this product</p></div>';
-      toast('No files found', 'info');
-    }
-  } catch(e) { toast('Network error', 'error'); }
-  finally { spin('fp', false); }
-}
+        // ==================== HANDLERS ====================
 
-// ════════════════════════════════════════════════════════════
-//  CATEGORIES API
-// ════════════════════════════════════════════════════════════
-async function fetchCategories() {
-  spin('cat', true);
-  try {
-    const res = await fetch(`${BASE_URL}/api/v0/categories/getAllCategories`);
-    const data = await res.json();
-    log('GET  /api/v0/categories/getAllCategories → ' + res.status, data, res.ok ? 'success' : 'error');
-    if (res.ok && data.length) {
-      document.getElementById('categories-result').innerHTML = `
-        <div style="display:flex;flex-wrap:wrap;gap:0.6rem">
-          ${data.map(c => `
-            <div style="padding:0.6rem 1rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;font-size:0.8rem">
-              <span style="color:var(--muted);font-family:var(--mono);font-size:0.65rem">#${c.idCatProd} </span>
-              <strong>${c.catProdName}</strong>
-            </div>`).join('')}
-        </div>`;
-      toast(`${data.length} categories loaded`, 'success');
-    } else {
-      document.getElementById('categories-result').innerHTML =
-        '<div class="empty-state"><div class="icon">🏷</div><p>No categories found</p></div>';
-    }
-  } catch(e) { toast('Network error', 'error'); }
-  finally { spin('cat', false); }
-}
+        // --- Auth ---
+        async function handleRegister() {
+            const fd = new FormData();
+            fd.append("name", document.getElementById("reg-name").value);
+            fd.append("email", document.getElementById("reg-email").value);
+            fd.append("password", document.getElementById("reg-password").value);
+            const tel = document.getElementById("reg-tel").value;
+            const role = document.getElementById("reg-role").value;
+            if (tel) fd.append("telephone", tel);
+            if (role) fd.append("role", role);
+            const img = document.getElementById("reg-image").files[0];
+            if (img) fd.append("profileImg", img);
+            const { data } = await apiCall("/auth/register", { method: "POST", body: fd });
+            if (data && data.userId) currentUser = data;
+        }
 
-async function getCategoryById() {
-  const id = document.getElementById('cat_id').value;
-  if (!id) { toast('Enter a category ID', 'error'); return; }
-  try {
-    const res = await fetch(`${BASE_URL}/api/v0/categories/${id}`);
-    const data = await res.json();
-    log(`GET /categories/${id} → ` + res.status, data, res.ok ? 'success' : 'error');
-    document.getElementById('cat-single-result').innerHTML = res.ok
-      ? `<div style="padding:0.75rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;font-family:var(--mono);font-size:0.75rem">
-           <span style="color:var(--muted)">id: </span>${data.idCatProd}<br/>
-           <span style="color:var(--muted)">name: </span><strong>${data.catProdName}</strong>
-         </div>`
-      : `<div class="empty-state"><div class="icon">⚠</div><p>Not found</p></div>`;
-  } catch(e) { toast('Network error', 'error'); }
-}
+        async function handleLogin() {
+            const email = document.getElementById("login-email").value;
+            const password = document.getElementById("login-password").value;
+            const { data } = await apiCall("/auth/login", {
+                method: "POST",
+                body: JSON.stringify({ email, password })
+            });
+            if (data && data.token) {
+                saveToken(data.token, data.refreshToken);
+                currentUser = data;
+            }
+        }
 
-// ════════════════════════════════════════════════════════════
-//  COUNTRIES API
-// ════════════════════════════════════════════════════════════
-async function fetchCountries() {
-  spin('country', true);
-  try {
-    const res = await fetch(`${BASE_URL}/api/v0/country/getAllCountries`);
-    const data = await res.json();
-    log('GET  /api/v0/country/getAllCountries → ' + res.status, data, res.ok ? 'success' : 'error');
-    if (res.ok && data.length) {
-      document.getElementById('countries-result').innerHTML = `
-        <div style="display:flex;flex-wrap:wrap;gap:0.6rem">
-          ${data.map(c => `
-            <div style="padding:0.6rem 1rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;font-size:0.8rem">
-              <span style="color:var(--muted);font-family:var(--mono);font-size:0.65rem">#${c.idCountry} </span>
-              <strong>${c.countryName}</strong>
-            </div>`).join('')}
-        </div>`;
-      toast(`${data.length} countries loaded`, 'success');
-    } else {
-      document.getElementById('countries-result').innerHTML =
-        '<div class="empty-state"><div class="icon">🌍</div><p>No countries found</p></div>';
-    }
-  } catch(e) { toast('Network error', 'error'); }
-  finally { spin('country', false); }
-}
+        async function handleRefresh() {
+            const manual = document.getElementById("refresh-token-input") &&
+                           document.getElementById("refresh-token-input").value.trim();
+            const token = manual || currentRefreshToken;
+            if (!token) return showResponse({ error: "Aucun refreshToken disponible" }, 400, 0, "POST");
+            const { data } = await apiCall("/auth/refresh", {
+                method: "POST",
+                body: JSON.stringify({ token })
+            });
+            if (data && data.token) saveToken(data.token, data.refreshToken || currentRefreshToken);
+        }
 
-async function getCountryById() {
-  const id = document.getElementById('country_id').value;
-  if (!id) { toast('Enter a country ID', 'error'); return; }
-  try {
-    const res = await fetch(`${BASE_URL}/api/v0/countries/${id}`);
-    const data = await res.json();
-    log(`GET /countries/${id} → ` + res.status, data, res.ok ? 'success' : 'error');
-    document.getElementById('country-single-result').innerHTML = res.ok
-      ? `<div style="padding:0.75rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;font-family:var(--mono);font-size:0.75rem">
-           <span style="color:var(--muted)">id: </span>${data.idCountry}<br/>
-           <span style="color:var(--muted)">name: </span><strong>${data.countryName}</strong>
-         </div>`
-      : `<div class="empty-state"><div class="icon">⚠</div><p>Not found</p></div>`;
-  } catch(e) { toast('Network error', 'error'); }
-}
-</script>
+        // --- Users ---
+        async function getProfile() {
+            await apiCall("/api/adminuser/get-profile");
+        }
+
+        async function getAllUsers() {
+            await apiCall("/api/admin/get-all-users");
+        }
+
+        async function getUserById() {
+            const id = document.getElementById("user-id-input").value;
+            await apiCall(`/api/user/get-users/${id}`);
+        }
+
+        async function getUsersByRole() {
+            const role = document.getElementById("filter-role").value;
+            await apiCall(`/api/admin/users/${role}`);
+        }
+
+        async function deleteUser() {
+            const id = document.getElementById("delete-user-id").value;
+            if (!id) return showResponse({ error: "Entrez un userId" }, 400, 0, "DELETE");
+            await apiCall(`/api/admin/delete/${id}`, { method: "DELETE" });
+        }
+
+        async function updateProfile() {
+            const fd = new FormData();
+            const fields = [
+                ["upd-name", "name"],
+                ["upd-email", "email"],
+                ["upd-password", "password"],
+                ["upd-tel", "telephone"]
+            ];
+            fields.forEach(([elId, key]) => {
+                const v = document.getElementById(elId).value.trim();
+                if (v) fd.append(key, v);
+            });
+            const role = document.getElementById("upd-role").value;
+            if (role) fd.append("role", role);
+            const file = document.getElementById("upd-file").files[0];
+            if (file) fd.append("file", file);
+            await apiCall("/api/user/update", { method: "PUT", body: fd });
+        }
+
+        // --- Products ---
+        async function createProduct() {
+            const fd = new FormData();
+            fd.append("ProdName", document.getElementById("prod-name").value);
+            fd.append("UnitPrice", document.getElementById("prod-unitprice").value);
+            fd.append("SoldPrice", document.getElementById("prod-soldprice").value);
+            fd.append("ProdQty", document.getElementById("prod-qty").value);
+            fd.append("prodDescription", document.getElementById("prod-desc").value);
+            fd.append("category", document.getElementById("prod-category").value);
+            document.getElementById("prod-country").value
+                .split(",").map(c => c.trim()).filter(Boolean)
+                .forEach(c => fd.append("Country", c));
+            for (const f of document.getElementById("prod-images").files) fd.append("ProdUrl", f);
+            await apiCall("/api/v0/product/newProduct", { method: "POST", body: fd });
+        }
+
+        async function updateProduct() {
+            const id = document.getElementById("upd-prod-id").value;
+            const fd = new FormData();
+            const optFields = [
+                ["upd-prod-name", "ProdName"],
+                ["upd-prod-unitprice", "UnitPrice"],
+                ["upd-prod-soldprice", "SoldPrice"],
+                ["upd-prod-qty", "ProdQty"],
+                ["upd-prod-category", "category"],
+                ["upd-prod-desc", "prodDescription"]
+            ];
+            optFields.forEach(([elId, key]) => {
+                const v = document.getElementById(elId).value.trim();
+                if (v) fd.append(key, v);
+            });
+            const countries = document.getElementById("upd-prod-country").value;
+            if (countries.trim()) {
+                countries.split(",").map(c => c.trim()).filter(Boolean)
+                    .forEach(c => fd.append("Country", c));
+            }
+            for (const f of document.getElementById("upd-prod-images").files) fd.append("ProdUrl", f);
+            await apiCall(`/api/v0/product/updateProduct/${id}`, { method: "PUT", body: fd });
+        }
+
+        async function getProductById() {
+            const id = document.getElementById("get-prod-id").value;
+            await apiCall(`/api/v0/product/${id}`);
+        }
+
+        async function listAllProducts() {
+            await apiCall("/api/v0/product/all");
+        }
+
+        async function searchProductByName() {
+            const name = document.getElementById("search-prod-name").value.trim();
+            if (!name) return;
+            await apiCall(`/api/v0/product/searchByName?prodName=${encodeURIComponent(name)}`);
+        }
+
+        async function searchProductByCountry() {
+            const country = document.getElementById("search-prod-country").value.trim();
+            if (!country) return;
+            await apiCall(`/api/v0/product/searchByCountry?country=${encodeURIComponent(country)}`);
+        }
+
+        async function greetings() {
+            await apiCall("/api/v0/product/greetings");
+        }
+
+        // --- Categories ---
+        async function createCategory() {
+            await apiCall("/api/v0/categories/createCategory", {
+                method: "POST",
+                body: JSON.stringify({
+                    catProdName: document.getElementById("cat-name").value,
+                    catProdDes: document.getElementById("cat-desc").value
+                })
+            });
+        }
+
+        async function getAllCategories() {
+            await apiCall("/api/v0/categories/getAllCategories");
+        }
+
+        async function getCategoryById() {
+            const id = document.getElementById("cat-id").value;
+            await apiCall(`/api/v0/categories/${id}`);
+        }
+
+        // --- Countries ---
+        async function createCountry() {
+            await apiCall("/api/v0/country/newCountry", {
+                method: "POST",
+                body: JSON.stringify({
+                    countryName: document.getElementById("country-name").value,
+                    countryCode: document.getElementById("country-code").value
+                })
+            });
+        }
+
+        async function getAllCountries() {
+            await apiCall("/api/v0/country/getAllCountries");
+        }
+
+        async function deleteCountry() {
+            const id = document.getElementById("delete-country-id").value;
+            await apiCall(`/api/v0/country/deleteCountry?idCountry=${id}`, { method: "DELETE" });
+        }
+
+        // --- Files ---
+        async function uploadSingleFile() {
+            const file = document.getElementById("single-file").files[0];
+            if (!file) return showResponse({ error: "Choisissez une image" }, 400, 0, "POST");
+            const fd = new FormData();
+            fd.append("file", file);
+            const pid = document.getElementById("file-product-id").value;
+            if (pid) fd.append("productId", pid);
+            await apiCall("/file/upload", { method: "POST", body: fd });
+        }
+
+        async function uploadBatchFiles() {
+            const files = document.getElementById("batch-files").files;
+            if (!files.length) return showResponse({ error: "Choisissez au moins une image" }, 400, 0, "POST");
+            const fd = new FormData();
+            for (const f of files) fd.append("files", f);
+            const pid = document.getElementById("batch-product-id").value;
+            if (pid) fd.append("productId", pid);
+            await apiCall("/file/upload/batch", { method: "POST", body: fd });
+        }
+
+        async function viewFile() {
+            const id = document.getElementById("view-file-id").value.trim();
+            if (!id) return;
+            window.open(`${BASE_URL}/file/${id}`, "_blank");
+            showResponse({ message: `Image ouverte dans un nouvel onglet`, url: `${BASE_URL}/file/${id}` }, 200, 0, "GET");
+        }
+
+        async function getFileMetadata() {
+            const id = document.getElementById("view-file-id").value.trim();
+            if (!id) return;
+            await apiCall(`/file/metadata/${id}`);
+        }
+
+        async function deleteFile() {
+            const id = document.getElementById("view-file-id").value.trim();
+            if (!id) return showResponse({ error: "Entrez un fileId" }, 400, 0, "DELETE");
+            await apiCall(`/file/${id}`, { method: "DELETE" });
+        }
+
+        async function getFilesByProduct() {
+            const id = document.getElementById("files-product-id").value;
+            await apiCall(`/file/product/${id}`);
+        }
+
+        // --- Achats ---
+        async function createAchat() {
+            const json = document.getElementById("achat-json").value.trim();
+            await apiCall("/api/v0/achat/new-achat", { method: "POST", body: json });
+        }
+
+        async function getAllAchats() {
+            await apiCall("/api/v0/achat/get-all-achat");
+        }
+
+        // --- Ventes ---
+        async function createVente() {
+            const json = document.getElementById("vente-json").value.trim();
+            await apiCall("/api/v0/vente/register", { method: "POST", body: json });
+        }
+
+        async function getAllVentes() {
+            await apiCall("/api/v0/vente/all");
+        }
+
+        async function getVenteById() {
+            const id = document.getElementById("get-vente-id").value;
+            await apiCall(`/api/v0/vente/${id}`);
+        }
+
+        async function searchVenteByDate() {
+            const date = document.getElementById("search-vente-date").value;
+            if (!date) return showResponse({ error: "Sélectionnez une date" }, 400, 0, "GET");
+            await apiCall(`/api/v0/vente/search?date=${date}`);
+        }
+
+        // ==================== INIT ====================
+        function init() {
+            tailwind.config = { content: [], theme: { extend: {} } };
+            updateTokenUI();
+            renderCurrentTab();
+            console.log("%c✅ Nipponhub API Tester v2.0 chargé !", "color:#e11d48; font-size:13px");
+            console.log("Base URL :", BASE_URL);
+        }
+
+        window.onload = init;
+    </script>
 </body>
 </html>
