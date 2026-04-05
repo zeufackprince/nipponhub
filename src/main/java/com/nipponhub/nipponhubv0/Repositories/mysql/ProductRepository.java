@@ -76,5 +76,11 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     List<Product> findByCountriesContaining(Country country);
 
+     /**
+     * NEW — used by the public searchByCategory endpoint.
+     * Matches on the category's name field, case-insensitive.
+     */
+    List<Product> findByCategoriesProdCatProdNameIgnoreCase(String categoryName);
+
     // List<Product> findByCategoriesProdContaining(CategoriesProd category);
 }
