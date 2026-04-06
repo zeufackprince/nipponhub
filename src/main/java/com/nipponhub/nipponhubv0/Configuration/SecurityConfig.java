@@ -7,7 +7,9 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -20,10 +22,38 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import com.nipponhub.nipponhubv0.Services.OurUserDetailsService;
 
 /**
- * The type Security config.
+ * Access matrix
+ * ─────────────────────────────────────────────────────────────────────────
+ *  /auth/**                         PUBLIC  (register, login, refresh)
+ *  /file/**                         PUBLIC  (image streaming + upload)
+ *
+ *  GET  /api/v0/product/**          PUBLIC  (catalogue browsing, search)
+ *  GET  /api/v0/categories/**       PUBLIC
+ *  GET  /api/v0/country/**          PUBLIC
+ *
+ *  POST/PUT/DELETE /api/v0/product/**      ADMIN | OWNER
+ *  POST/PUT/DELETE /api/v0/categories/**   ADMIN | OWNER
+ *  POST/DELETE     /api/v0/country/**      ADMIN | OWNER
+ *  /api/v0/achat/**                        ADMIN | OWNER
+ *  /api/v0/vente/**                        ADMIN | OWNER  (direct sales)
+ *
+ *  POST /api/v0/commande/new               Any authenticated user
+ *  GET  /api/v0/commande/my-orders/**      Any authenticated user
+ *  /api/v0/commande/**  (other)            ADMIN | OWNER
+ *
+ *  /api/admin/**                    ADMIN | OWNER
+ *  /api/adminuser/**                ADMIN | OWNER
+ *  PUT /api/user/update             Any authenticated user
+ *  /api/user/**                     Any authenticated user
+ *  Everything else                  Any authenticated user
+ * ─────────────────────────────────────────────────────────────────────────
+ *
+ * Fine-grained @PreAuthorize annotations on individual methods provide an
+ * extra layer of enforcement beyond this filter chain.
  */
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
     @Autowired
@@ -49,10 +79,47 @@ public class SecurityConfig {
                                                                         "/swagger-ui/**",
                                                                         "/v3/**",
                                                                         "/nipponhub-test-console.html/**").permitAll()
-                        .requestMatchers("/admin/**").hasAnyAuthority("ADMIN")
-                        .requestMatchers("/user/**").hasAnyAuthority("USER")
-                        .requestMatchers("/adminuser/**").hasAnyAuthority("ADMIN", "USER")
+// ── Public: auth & files ───────────────────────────────
+                .requestMatchers("/auth/**").permitAll()
+                .requestMatchers("/file/**").permitAll()
+
+                // ── Public: catalogue reads ────────────────────────────
+                .requestMatchers(HttpMethod.GET,  "/api/v0/product/**").permitAll()
+                .requestMatchers(HttpMethod.GET,  "/api/v0/categories/**").permitAll()
+                .requestMatchers(HttpMethod.GET,  "/api/v0/country/**").permitAll()
+
+                // ── ADMIN / OWNER: product management ─────────────────
+                .requestMatchers(HttpMethod.POST,   "/api/v0/product/**").hasAnyRole("ADMIN","OWNER")
+                .requestMatchers(HttpMethod.PUT,    "/api/v0/product/**").hasAnyRole("ADMIN","OWNER")
+                .requestMatchers(HttpMethod.DELETE, "/api/v0/product/**").hasAnyRole("ADMIN","OWNER")
+
+                // ── ADMIN / OWNER: category management ────────────────
+                .requestMatchers(HttpMethod.POST,   "/api/v0/categories/**").hasAnyRole("ADMIN","OWNER")
+                .requestMatchers(HttpMethod.PUT,    "/api/v0/categories/**").hasAnyRole("ADMIN","OWNER")
+                .requestMatchers(HttpMethod.DELETE, "/api/v0/categories/**").hasAnyRole("ADMIN","OWNER")
+
+                // ── ADMIN / OWNER: country management ─────────────────
+                .requestMatchers(HttpMethod.POST,   "/api/v0/country/**").hasAnyRole("ADMIN","OWNER")
+                .requestMatchers(HttpMethod.DELETE, "/api/v0/country/**").hasAnyRole("ADMIN","OWNER")
+
+                // ── ADMIN / OWNER: achats & direct ventes ─────────────
+                .requestMatchers("/api/v0/achat/**").hasAnyRole("ADMIN","OWNER")
+                .requestMatchers("/api/v0/vente/**").hasAnyRole("ADMIN","OWNER")
+
+                // ── Any authenticated: place order & own history ───────
+                .requestMatchers(HttpMethod.POST, "/api/v0/commande/new").authenticated()
+                .requestMatchers("/api/v0/commande/my-orders/**").authenticated()
+
+                // ── ADMIN / OWNER: all other commande operations ───────
+                .requestMatchers("/api/v0/commande/**").hasAnyRole("ADMIN","OWNER")
+
+                // ── User management ────────────────────────────────────
+                .requestMatchers("/api/admin/**").hasAnyRole("ADMIN","OWNER")
+                .requestMatchers("/api/adminuser/**").hasAnyRole("ADMIN","OWNER")
+                .requestMatchers(HttpMethod.PUT, "/api/user/update").authenticated()
+                .requestMatchers("/api/user/**").authenticated()
                         .anyRequest().authenticated())
+
                 .sessionManagement(manager->manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(

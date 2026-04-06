@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import com.nipponhub.nipponhubv0.DTO.VenteDto;
@@ -17,6 +18,7 @@ import lombok.AllArgsConstructor;
 @RestController
 @RequestMapping("/api/v0/vente")
 @AllArgsConstructor
+@PreAuthorize("hasAnyRole('ADMIN', 'OWNER')")
 public class VenteController {
 
     private final VenteService venteService;

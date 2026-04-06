@@ -2,6 +2,7 @@ package com.nipponhub.nipponhubv0.Services;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -13,7 +14,9 @@ import com.nipponhub.nipponhubv0.DTO.AchatItemDetailDto;
 import com.nipponhub.nipponhubv0.Models.AchatItem;
 import com.nipponhub.nipponhubv0.Models.Achats;
 import com.nipponhub.nipponhubv0.Models.Product;
+import com.nipponhub.nipponhubv0.Models.ProductActivity;
 import com.nipponhub.nipponhubv0.Repositories.mysql.AchatRepository;
+import com.nipponhub.nipponhubv0.Repositories.mysql.ProductActivityRepository;
 import com.nipponhub.nipponhubv0.Repositories.mysql.ProductRepository;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -25,63 +28,79 @@ public class AchatService {
 
     private final AchatRepository achatRepository;
     private final ProductService productService;
+    private final ProductActivityRepository activityRepos;
     private final ProductRepository productRepository;
 
     @Transactional
-    public AchatDto enregistrerAchat(Achats achats) {
-        achats.setDate(LocalDate.now());
-        
-        for (AchatItem item : achats.getItems()) {
-            // Note: Make sure product is fetched or ID is present before calling this
-            productService.ajouterQuantite(item.getProduct().getProdName(), item.getQuantite());
-            item.setAchat(achats);
+    public AchatDto createAchat(Achats request, String performedBy, String performedByRole) {
+        Achats achat = new Achats();
+        achat.setDate(LocalDate.now());  // ignore client-supplied date
+
+        List<AchatItem> items = new ArrayList<>();
+        for (AchatItem reqItem : request.getItems()) {
+            Product product = productRepository.findById(reqItem.getProduct().getIdProd())
+                    .orElseThrow(() -> new EntityNotFoundException(
+                            "Produit non trouvé avec ID : " + reqItem.getProduct().getIdProd()));
+
+            AchatItem item = new AchatItem();
+            item.setProduct(product);
+            item.setQuantite(reqItem.getQuantite());
+            item.setAchat(achat);
+            items.add(item);
+
+            // Increase stock
+            product.setProdQty(product.getProdQty() + reqItem.getQuantite());
+            productRepository.save(product);
+
+            // Audit log
+            ProductActivity log = new ProductActivity();
+            log.setProduct(product);
+            log.setActionType("ACHAT");
+            log.setPerformedBy(performedBy);
+            log.setPerformedByRole(performedByRole);
+            log.setDetails("qty+=" + reqItem.getQuantite()
+                    + " | unitPrice=" + product.getUnitPrice()
+                    + " | newStock=" + product.getProdQty());
+            activityRepos.save(log);
         }
-        
-        Achats dbAchats = this.achatRepository.save(achats);
-        return entityToDto(dbAchats, "Achat enregistré avec succès");
+
+        achat.setItems(items);
+        achat = achatRepository.save(achat);
+        return toDto(achat, "Achat enregistré avec succès");
     }
 
-    @Transactional(readOnly = true)
     public List<AchatDto> getAllAchats() {
-        return this.achatRepository.findAll().stream()
-                .map(achat -> entityToDto(achat, "Data fetched successfully"))
+        return achatRepository.findAll().stream()
+                .map(a -> toDto(a, null))
                 .collect(Collectors.toList());
     }
 
-    private AchatDto entityToDto(Achats achats, String message) {
-        AchatDto res = new AchatDto();
-        res.setId(achats.getId());
-        res.setDate(achats.getDate());
-        res.setMessage(message);
+    // ── DTO mapping ───────────────────────────────────────────────────────
+    private AchatDto toDto(Achats a, String message) {
+        AchatDto dto = new AchatDto();
+        dto.setId(a.getId());
+        dto.setDate(a.getDate());
+        dto.setMessage(message);
 
-        BigDecimal totalCost = BigDecimal.ZERO;
-        int totalItems = 0;
-        
-        List<AchatItemDetailDto> itemDetails = achats.getItems().stream().map(item -> {
-            Product prod = productRepository.findById(item.getProduct().getIdProd())
-                .orElseThrow(() -> new EntityNotFoundException("Produit not found with ID: " + item.getProduct().getIdProd()));
+        BigDecimal total = BigDecimal.ZERO;
+        int totalItem = 0;
+        List<AchatItemDetailDto> itemDtos = new ArrayList<>();
 
-            BigDecimal qte = BigDecimal.valueOf(item.getQuantite());
-            BigDecimal itemTotal = prod.getUnitPrice().multiply(qte);
-
-            return new AchatItemDetailDto(
-                prod.getIdProd(),
-                prod.getProdName(),
-                item.getQuantite(),
-                prod.getUnitPrice(),
-                itemTotal
-            );
-        }).collect(Collectors.toList());
-
-        for (AchatItemDetailDto detail : itemDetails) {
-            totalCost = totalCost.add(detail.getTotal());
-            totalItems += detail.getQuantite();
+        for (AchatItem item : a.getItems()) {
+            AchatItemDetailDto i = new AchatItemDetailDto();
+            i.setProductId(item.getProduct().getIdProd());
+            i.setProductName(item.getProduct().getProdName());
+            i.setQuantite(item.getQuantite());
+            i.setPrixUnitaire(item.getProduct().getUnitPrice());
+            i.setTotal(item.getProduct().getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantite())));
+            total = total.add(i.getTotal());
+            totalItem += item.getQuantite();
+            itemDtos.add(i);
         }
 
-        res.setCoutTotal(totalCost);
-        res.setTotalItem(totalItems);
-        res.setItems(itemDetails);
-
-        return res;
+        dto.setCoutTotal(total);
+        dto.setTotalItem(totalItem);
+        dto.setItems(itemDtos);
+        return dto;
     }
 }

@@ -2,6 +2,7 @@ package com.nipponhub.nipponhubv0.Services;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -9,12 +10,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.nipponhub.nipponhubv0.DTO.VenteDto;
-import com.nipponhub.nipponhubv0.DTO.VenteItemDetailDto;
+import com.nipponhub.nipponhubv0.Models.Commande;
+import com.nipponhub.nipponhubv0.Models.CommandeItem;
 import com.nipponhub.nipponhubv0.Models.Product;
 import com.nipponhub.nipponhubv0.Models.Vente;
 import com.nipponhub.nipponhubv0.Models.VenteItem;
 import com.nipponhub.nipponhubv0.Repositories.mysql.ProductRepository;
 import com.nipponhub.nipponhubv0.Repositories.mysql.VenteRepository;
+import com.nipponhub.nipponhubv0.Mappers.VenteMapper;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
@@ -28,6 +31,9 @@ public class VenteService {
     private final ProductRepository productRepository;
     
     private final VenteRepository venteRepo;
+
+    private final VenteMapper venteMapper;
+
 
     @Transactional
     public VenteDto registerVente(Vente vente) {
@@ -60,7 +66,113 @@ public class VenteService {
         }
 
         Vente saved = venteRepo.save(vente);
-        return mapVenteToDto(saved, "Vente enregistrée avec succès");
+        return venteMapper.mapVenteToDto(saved, "Vente enregistrée avec succès");
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    //  Called by CommandeService when an order is DELIVERED
+    //  This is the ONLY path that decrements stock for client orders.
+    // ══════════════════════════════════════════════════════════════════════
+ 
+    /**
+     * Create a Vente from a delivered Commande.
+     *  - Decrements product stock (rolls back the whole transaction on failure)
+     *  - Links the Vente to the client and commande
+     */
+    @Transactional
+    public Vente createFromCommande(Commande commande, String adminEmail, String adminRole) {
+        Vente vente = new Vente();
+        vente.setDate(LocalDate.now());
+        vente.setClient(commande.getClient());
+        vente.setCommande(commande);
+ 
+        List<VenteItem> venteItems = new ArrayList<>();
+        for (CommandeItem ci : commande.getItems()) {
+            Product product = productRepository.findById(ci.getProduct().getIdProd())
+                    .orElseThrow(() -> new EntityNotFoundException(
+                            "Produit introuvable : " + ci.getProduct().getIdProd()));
+ 
+            int qty = ci.getQuantite();
+            if (product.getProdQty() < qty) {
+                throw new IllegalStateException(
+                        "Stock insuffisant pour « " + product.getProdName() + " ». "
+                        + "Disponible : " + product.getProdQty() + ", demandé : " + qty);
+            }
+ 
+            // Determine actual sale price
+            BigDecimal prixVendu = (ci.getPrixVendu() != null
+                    && ci.getPrixVendu().compareTo(BigDecimal.ZERO) > 0)
+                    ? ci.getPrixVendu()
+                    : product.getSoldPrice();
+ 
+            BigDecimal coutLigne  = product.getUnitPrice().multiply(BigDecimal.valueOf(qty));
+            BigDecimal totalLigne = prixVendu.multiply(BigDecimal.valueOf(qty));
+            BigDecimal gainLigne  = totalLigne.subtract(coutLigne);
+ 
+            VenteItem vi = new VenteItem();
+            vi.setProduct(product);
+            vi.setQuantite(qty);
+            vi.setPrixVendu(prixVendu);
+            vi.setPrix(totalLigne);
+            vi.setGain(gainLigne);
+            venteItems.add(vi);
+ 
+            // Decrement stock
+            product.setProdQty(product.getProdQty() - qty);
+            productRepository.save(product);
+        }
+ 
+        vente.setItems(venteItems);
+        return venteRepo.save(vente);
+    }
+ 
+    // ══════════════════════════════════════════════════════════════════════
+    //  Direct admin / owner sale (no commande — e.g. in-store / B2B)
+    //  Kept from original implementation; ADMIN & OWNER only via controller.
+    // ══════════════════════════════════════════════════════════════════════
+ 
+    @Transactional
+    public VenteDto registerDirectVente(Vente request) {
+        Vente vente = new Vente();
+        vente.setDate(LocalDate.now());
+        // client and commande are null for direct sales
+ 
+        List<VenteItem> items = new ArrayList<>();
+        for (VenteItem reqItem : request.getItems()) {
+            Product product = productRepository.findById(reqItem.getProduct().getIdProd())
+                    .orElseThrow(() -> new EntityNotFoundException(
+                            "Produit non trouvé avec ID : " + reqItem.getProduct().getIdProd()));
+ 
+            int qty = reqItem.getQuantite();
+            if (product.getProdQty() < qty) {
+                throw new IllegalStateException(
+                        "Insufficient stock. Current: " + product.getProdQty()
+                        + ", requested: " + qty);
+            }
+ 
+            BigDecimal prixVendu = (reqItem.getPrixVendu() == null
+                    || reqItem.getPrixVendu().compareTo(BigDecimal.ZERO) == 0)
+                    ? product.getUnitPrice()
+                    : reqItem.getPrixVendu();
+ 
+            BigDecimal cout  = product.getUnitPrice().multiply(BigDecimal.valueOf(qty));
+            BigDecimal total = prixVendu.multiply(BigDecimal.valueOf(qty));
+            BigDecimal gain  = total.subtract(cout);
+ 
+            VenteItem vi = new VenteItem();
+            vi.setProduct(product);
+            vi.setQuantite(qty);
+            vi.setPrixVendu(prixVendu);
+            vi.setPrix(total);
+            vi.setGain(gain);
+            items.add(vi);
+ 
+            product.setProdQty(product.getProdQty() - qty);
+            productRepository.save(product);
+        }
+ 
+        vente.setItems(items);
+        return venteMapper.toDto(venteRepo.save(vente), "Vente enregistrée avec succès");
     }
 
     @Transactional(readOnly = true)
@@ -70,7 +182,7 @@ public class VenteService {
             throw new EntityNotFoundException("No sales data found in DB!!");
         }
         return allVente.stream()
-                .map(vente -> mapVenteToDto(vente, "Data fetched with success"))
+                .map(vente -> venteMapper.mapVenteToDto(vente, "Data fetched with success"))
                 .collect(Collectors.toList());
     }
 
@@ -78,7 +190,7 @@ public class VenteService {
     public VenteDto getVenteById(Long id) {
         Vente vente = venteRepo.findById(id)
             .orElseThrow(() -> new EntityNotFoundException("Vente with ID " + id + " not found"));
-        return mapVenteToDto(vente, "Vente fetched successfully");
+        return venteMapper.mapVenteToDto(vente, "Vente fetched successfully");
     }
 
     @Transactional(readOnly = true)
@@ -88,66 +200,8 @@ public class VenteService {
             throw new EntityNotFoundException("No ventes found for date " + date);
         }
         return ventes.stream()
-                .map(vente -> mapVenteToDto(vente, "Ventes fetched successfully"))
+                .map(vente -> venteMapper.mapVenteToDto(vente, "Ventes fetched successfully"))
                 .collect(Collectors.toList());
     }
 
-    private VenteDto mapVenteToDto(Vente vente, String message) {
-        VenteDto dto = new VenteDto();
-        dto.setId(vente.getId());
-        dto.setDate(vente.getDate());
-        dto.setMessage(message);
-
-        BigDecimal coutTotal = BigDecimal.ZERO;
-        BigDecimal prixVenduTotal = BigDecimal.ZERO;
-        BigDecimal totalGain = BigDecimal.ZERO;
-        int totalItem = 0;
-
-        List<VenteItemDetailDto> itemDetails = vente.getItems().stream().map(item -> {
-            Product prod = productRepository.findById(item.getProduct().getIdProd())
-                .orElseThrow(() -> new EntityNotFoundException("Produit non trouvé"));
-
-            BigDecimal qte = BigDecimal.valueOf(item.getQuantite());
-            BigDecimal itemTotal;
-            BigDecimal itemGain;
-            BigDecimal appliedPrixVendu = item.getPrixVendu() != null ? item.getPrixVendu() : BigDecimal.ZERO;
-
-            if (appliedPrixVendu.compareTo(BigDecimal.ZERO) == 0) {
-                itemTotal = prod.getUnitPrice().multiply(qte);
-                itemGain = BigDecimal.ZERO;
-                appliedPrixVendu = prod.getUnitPrice();
-            } else {
-                itemTotal = appliedPrixVendu.multiply(qte);
-                itemGain = appliedPrixVendu.subtract(prod.getUnitPrice()).multiply(qte);
-            }
-
-            return new VenteItemDetailDto(
-                prod.getIdProd(),
-                prod.getProdName(),
-                item.getQuantite(),
-                prod.getUnitPrice(),
-                appliedPrixVendu,
-                itemTotal,
-                itemGain
-            );
-        }).collect(Collectors.toList());
-
-        for (VenteItemDetailDto detail : itemDetails) {
-            // Calculating the base cost (Unit Price * Qty)
-            BigDecimal baseCost = detail.getPrixUnitaire().multiply(BigDecimal.valueOf(detail.getQuantite()));
-            coutTotal = coutTotal.add(baseCost);
-            
-            prixVenduTotal = prixVenduTotal.add(detail.getTotal());
-            totalGain = totalGain.add(detail.getGain());
-            totalItem += detail.getQuantite();
-        }
-
-        dto.setCoutTotal(coutTotal);
-        dto.setPrixVendu(prixVenduTotal);
-        dto.setGain(totalGain);
-        dto.setTotalItem(totalItem);
-        dto.setItems(itemDetails);
-
-        return dto;
-    }
 }

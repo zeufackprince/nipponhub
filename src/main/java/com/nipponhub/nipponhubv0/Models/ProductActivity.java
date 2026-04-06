@@ -1,6 +1,8 @@
 package com.nipponhub.nipponhubv0.Models;
 
 import jakarta.persistence.*;
+import lombok.Data;
+
 import java.time.LocalDateTime;
  
 /**
@@ -22,6 +24,7 @@ import java.time.LocalDateTime;
            @Index(name = "idx_pa_product",      columnList = "product_id"),
            @Index(name = "idx_pa_performed_by", columnList = "performed_by")
        })
+@Data
 public class ProductActivity {
  
     @Id

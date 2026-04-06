@@ -1,8 +1,10 @@
 package com.nipponhub.nipponhubv0.Controllers;
 
 import java.util.List;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import com.nipponhub.nipponhubv0.DTO.AchatDto;
@@ -11,21 +13,29 @@ import com.nipponhub.nipponhubv0.Services.AchatService;
 
 import lombok.AllArgsConstructor;
 
+
+/**
+ * Achat (purchase from supplier) — ADMIN and OWNER only.
+ * Increases product stock and writes a ProductActivity audit entry.
+ */
 @RestController
 @RequestMapping("/api/v0/achat")
 @AllArgsConstructor
+@PreAuthorize("hasAnyRole('ADMIN', 'OWNER')")
 public class AchatController {
 
     private final AchatService achatService;
 
-    /**
-     * POST /api/v0/achat/new-achat
-     * Enregistre un nouvel achat et met à jour les stocks.
-     */
+        /** POST /api/v0/achat/new-achat */
     @PostMapping("/new-achat")
-    public ResponseEntity<AchatDto> newAchat(@RequestBody Achats achats) {
-        AchatDto res = this.achatService.enregistrerAchat(achats);
-        return new ResponseEntity<>(res, HttpStatus.CREATED);
+    public ResponseEntity<AchatDto> newAchat(
+            @RequestBody Achats request,
+            @AuthenticationPrincipal UserDetails user) {
+
+        String role = user.getAuthorities().iterator().next().getAuthority()
+                        .replace("ROLE_", "");
+        return ResponseEntity.status(201)
+                .body(achatService.createAchat(request, user.getUsername(), role));
     }
 
     /**

@@ -1,0 +1,254 @@
+package com.nipponhub.service;
+
+import com.nipponhub.dto.ProductDto;
+import com.nipponhub.entity.*;
+import com.nipponhub.repository.*;
+import jakarta.persistence.EntityNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+/**
+ * All public read methods are accessible without a token (visitors).
+ * Mutations (create / update / delete) require ADMIN or OWNER — enforced
+ * at the controller layer via @PreAuthorize.
+ *
+ * Every mutation writes a ProductActivity record for full traceability.
+ */
+@Service
+public class ProductService {
+
+    @Autowired private ProductRepository         productRepo;
+    @Autowired private CategoriesProdRepository  categoryRepo;
+    @Autowired private CountryRepository         countryRepo;
+    @Autowired private ProductActivityRepository  activityRepo;
+    // Inject your GridFS / file service here if you have one
+    // @Autowired private FileStorageService fileService;
+
+    // ══════════════════════════════════════════════════════════════════════
+    //  PUBLIC reads (no auth required)
+    // ══════════════════════════════════════════════════════════════════════
+
+    public List<ProductDto> getAllProducts() {
+        return productRepo.findAll().stream().map(this::toDto).collect(Collectors.toList());
+    }
+
+    public ProductDto getById(Long id) {
+        return toDto(requireProduct(id));
+    }
+
+    public ProductDto searchByName(String name) {
+        Product p = productRepo.findByProdNameIgnoreCase(name)
+                .orElseThrow(() -> new EntityNotFoundException("Produit introuvable : " + name));
+        return toDto(p);
+    }
+
+    public List<ProductDto> searchByCountry(String countryName) {
+        return productRepo.findByCountriesCountryNameIgnoreCase(countryName)
+                .stream().map(this::toDto).collect(Collectors.toList());
+    }
+
+    /**
+     * NEW — filter by category name (case-insensitive).
+     * Public endpoint — visitors can use it.
+     */
+    public List<ProductDto> searchByCategory(String categoryName) {
+        return productRepo.findByCategoriesProdCatProdNameIgnoreCase(categoryName)
+                .stream().map(this::toDto).collect(Collectors.toList());
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    //  ADMIN / OWNER mutations
+    // ══════════════════════════════════════════════════════════════════════
+
+    @Transactional
+    public ProductDto createProduct(ProductDto request,
+                                    List<MultipartFile> images,
+                                    String performedBy,
+                                    String performedByRole) {
+        // --- validate ---
+        if (request.getProdName() == null || request.getProdName().isBlank())
+            throw new IllegalArgumentException("Product name is required");
+        if (request.getCategoryName() == null || request.getCategoryName().isBlank())
+            throw new IllegalArgumentException("Category is required");
+        if (request.getCountries() == null || request.getCountries().isEmpty())
+            throw new IllegalArgumentException("At least one country is required");
+
+        Product product = new Product();
+        product.setProdName(request.getProdName());
+        product.setUnitPrice(request.getUnitPrice());
+        product.setSoldPrice(request.getSoldPrice());
+        product.setProdQty(request.getProdQty());
+        product.setProdDescription(request.getProdDescription());
+
+        // Category
+        CategoriesProd cat = categoryRepo.findByCatProdNameIgnoreCase(request.getCategoryName())
+                .orElseThrow(() -> new RuntimeException("Category not found: " + request.getCategoryName()));
+        product.setCategoriesProd(cat);
+
+        // Countries
+        List<Country> countries = request.getCountries().stream()
+                .map(name -> countryRepo.findByCountryNameIgnoreCase(name)
+                        .orElseThrow(() -> new RuntimeException("Country not found: " + name)))
+                .collect(Collectors.toList());
+        product.setCountries(countries);
+
+        // Images — delegate to your existing GridFS logic
+        // if (images != null) { ... }
+
+        product = productRepo.save(product);
+
+        // Activity log
+        log(product, "CREATED", performedBy, performedByRole, "name=" + product.getProdName());
+
+        ProductDto dto = toDto(product);
+        dto.setMessage("Success");
+        return dto;
+    }
+
+    @Transactional
+    public ProductDto updateProduct(Long id,
+                                    ProductDto request,
+                                    List<MultipartFile> images,
+                                    String performedBy,
+                                    String performedByRole) {
+        Product product = requireProduct(id);
+        StringBuilder changes = new StringBuilder();
+
+        if (request.getProdName() != null && !request.getProdName().isBlank()) {
+            changes.append("name:").append(product.getProdName()).append("→").append(request.getProdName()).append(";");
+            product.setProdName(request.getProdName());
+        }
+        if (request.getUnitPrice() != null) {
+            product.setUnitPrice(request.getUnitPrice());
+            changes.append("unitPrice→").append(request.getUnitPrice()).append(";");
+        }
+        if (request.getSoldPrice() != null) {
+            product.setSoldPrice(request.getSoldPrice());
+            changes.append("soldPrice→").append(request.getSoldPrice()).append(";");
+        }
+        if (request.getProdQty() != null) {
+            product.setProdQty(request.getProdQty());
+            changes.append("qty→").append(request.getProdQty()).append(";");
+        }
+        if (request.getProdDescription() != null && !request.getProdDescription().isBlank()) {
+            product.setProdDescription(request.getProdDescription());
+            changes.append("desc updated;");
+        }
+        if (request.getCategoryName() != null && !request.getCategoryName().isBlank()) {
+            CategoriesProd cat = categoryRepo.findByCatProdNameIgnoreCase(request.getCategoryName())
+                    .orElseThrow(() -> new RuntimeException("Category not found: " + request.getCategoryName()));
+            product.setCategoriesProd(cat);
+            changes.append("category→").append(request.getCategoryName()).append(";");
+        }
+        if (request.getCountries() != null && !request.getCountries().isEmpty()) {
+            List<Country> countries = request.getCountries().stream()
+                    .map(name -> countryRepo.findByCountryNameIgnoreCase(name)
+                            .orElseThrow(() -> new RuntimeException("Country not found: " + name)))
+                    .collect(Collectors.toList());
+            product.setCountries(countries);
+            changes.append("countries updated;");
+        }
+        // Images — delegate to your existing GridFS logic
+        // if (images != null && !images.isEmpty()) { ... changes.append("images updated;"); }
+
+        product = productRepo.save(product);
+        log(product, "UPDATED", performedBy, performedByRole, changes.toString());
+
+        ProductDto dto = toDto(product);
+        dto.setMessage("Success");
+        return dto;
+    }
+
+    /**
+     * NEW — permanently remove a product.  ADMIN / OWNER only.
+     * Also deletes any linked GridFS images (plug in your file service).
+     */
+    @Transactional
+    public void deleteProduct(Long id, String performedBy, String performedByRole) {
+        Product product = requireProduct(id);
+        String name = product.getProdName();
+
+        // Delete images from GridFS — add your file-deletion logic here:
+        // product.getProdUrl().forEach(gridFsId -> fileService.deleteFile(gridFsId));
+
+        // Log before delete so the product FK is still valid
+        log(product, "DELETED", performedBy, performedByRole, "name=" + name);
+
+        productRepo.delete(product);
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    //  Stock helpers (called by AchatService / VenteService)
+    // ══════════════════════════════════════════════════════════════════════
+
+    @Transactional
+    public void ajouterQuantite(Long productId, int qty) {
+        Product p = requireProduct(productId);
+        p.setProdQty(p.getProdQty() + qty);
+        productRepo.save(p);
+    }
+
+    @Transactional
+    public void retirerQuantite(Long productId, int qty) {
+        Product p = requireProduct(productId);
+        if (p.getProdQty() < qty) {
+            throw new IllegalStateException(
+                    "Insufficient stock. Current: " + p.getProdQty() + ", requested: " + qty);
+        }
+        p.setProdQty(p.getProdQty() - qty);
+        productRepo.save(p);
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    //  Audit trail (ADMIN / OWNER)
+    // ══════════════════════════════════════════════════════════════════════
+
+    public List<ProductActivity> getActivityForProduct(Long productId) {
+        return activityRepo.findByProductOrderByTimestampDesc(requireProduct(productId));
+    }
+
+    public List<ProductActivity> getActivityByUser(String email) {
+        return activityRepo.findByPerformedByOrderByTimestampDesc(email);
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    //  Private helpers
+    // ══════════════════════════════════════════════════════════════════════
+
+    private Product requireProduct(Long id) {
+        return productRepo.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Produit introuvable : " + id));
+    }
+
+    public void log(Product product, String action, String email, String role, String details) {
+        ProductActivity a = new ProductActivity();
+        a.setProduct(product);
+        a.setActionType(action);
+        a.setPerformedBy(email);
+        a.setPerformedByRole(role);
+        a.setDetails(details);
+        activityRepo.save(a);
+    }
+
+    // ── DTO mapping ───────────────────────────────────────────────────────
+    private ProductDto toDto(Product p) {
+        ProductDto dto = new ProductDto();
+        dto.setIdProd(p.getIdProd());
+        dto.setProdName(p.getProdName());
+        dto.setUnitPrice(p.getUnitPrice());
+        dto.setSoldPrice(p.getSoldPrice());
+        dto.setProdQty(p.getProdQty());
+        dto.setProdDescription(p.getProdDescription());
+        dto.setCreatedAt(p.getCreatedAt());
+        if (p.getCategoriesProd() != null) dto.setCategoryName(p.getCategoriesProd().getCatProdName());
+        if (p.getCountries() != null)
+            dto.setCountries(p.getCountries().stream().map(Country::getCountryName).collect(Collectors.toList()));
+        if (p.getProdUrl() != null) dto.setProdUrl(p.getProdUrl());
+        return dto;
+    }
+}

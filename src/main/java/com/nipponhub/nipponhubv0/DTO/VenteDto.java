@@ -31,4 +31,13 @@ public class VenteDto {
     
     private String message;
 
+    private String clientEmail;
+
+    private String clientName;
+
+    private Long clientId;
+
+    private Long commandeId;
+
+
 }

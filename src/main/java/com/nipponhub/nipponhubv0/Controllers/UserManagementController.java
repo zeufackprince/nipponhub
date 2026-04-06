@@ -1,6 +1,7 @@
 package com.nipponhub.nipponhubv0.Controllers;
 
 import com.nipponhub.nipponhubv0.DTO.ReqRes;
+import com.nipponhub.nipponhubv0.Models.OurUsers;
 import com.nipponhub.nipponhubv0.Models.Enum.UserRole;
 import com.nipponhub.nipponhubv0.Repositories.mysql.UserRepository;
 import com.nipponhub.nipponhubv0.Services.UsersManagementService;
@@ -9,7 +10,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -17,20 +20,27 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * REST controller for all user-related endpoints.
+ * User Management Controller — updated to match use-case rules:
  *
- * Endpoint groups:
- *  • /auth/**          — public (register, login, token refresh)
- *  • /api/admin/**     — ADMIN role required
- *  • /api/user/**      — authenticated users (own data only)
- *  • /api/adminuser/** — authenticated users (shared admin+user endpoints)
+ *  ┌─────────────────────────────────────────────────────────────────┐
+ *  │  Action                       │ Who can do it                  │
+ *  ├─────────────────────────────────────────────────────────────────┤
+ *  │  Create users with any role   │ ADMIN only                     │
+ *  │  (ADMIN, OWNER, PARTNER…)     │                                │
+ *  │  View all users               │ ADMIN, OWNER                   │
+ *  │  Filter users by role         │ ADMIN, OWNER                   │
+ *  │  Get user by ID               │ ADMIN, OWNER                   │
+ *  │  Delete user                  │ ADMIN only                     │
+ *  │  View own profile             │ Any authenticated user         │
+ *  │  Update own profile           │ Any authenticated user         │
+ *  └─────────────────────────────────────────────────────────────────┘
  *
- * The controller's only job is HTTP plumbing:
- * parse params → call service → wrap result in ResponseEntity.
- * All business logic lives in UsersManagementService.
+ *  Note: public registration (POST /auth/register) always assigns the
+ *  CLIENT role regardless of what the caller sends — enforced in
+ *  AuthController/Service, not here.
  */
 @RestController
-@RequiredArgsConstructor // constructor injection for all final fields
+@RequiredArgsConstructor 
 public class UserManagementController {
 
     private final UsersManagementService usersManagementService;
@@ -51,8 +61,9 @@ public class UserManagementController {
      *
      * @param file optional profile picture (must be an image/* MIME type)
      */
-    @PostMapping("/auth/register")
-    public ResponseEntity<ReqRes> register(
+    @PostMapping("/api/admin/create-user")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ReqRes> createPrivilegedUser(
         @RequestParam(required = false) String     name,
         @RequestParam(required = false) String     email,
         @RequestParam(required = false) String     password,
@@ -66,32 +77,10 @@ public class UserManagementController {
             .body(usersManagementService.register(reg, profileImg));
     }
 
-    /**
-     * POST /auth/login
-     *
-     * Authenticate with email + password. Returns a JWT access token
-     * and a refresh token on success.
-     *
-     * @param req JSON body with `email` and `password`
-     */
-    @PostMapping("/auth/login")
-    public ResponseEntity<ReqRes> login(@RequestBody ReqRes req) {
-        return ResponseEntity.ok(usersManagementService.login(req));
-    }
 
-    /**
-     * POST /auth/refresh
-     *
-     * Obtain a new access token using a still-valid refresh token.
-     *
-     * @param req JSON body with `token` (the refresh token string)
-     */
-    @PostMapping("/auth/refresh")
-    public ResponseEntity<ReqRes> refreshToken(@RequestBody ReqRes req) {
-        return ResponseEntity.ok(usersManagementService.refreshToken(req));
-    }
-
-    // ─── ADMIN ENDPOINTS ─────────────────────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════════
+    //  ADMIN / OWNER: read user data
+    // ══════════════════════════════════════════════════════════════════════
 
     /**
      * GET /api/admin/get-all-users
@@ -113,7 +102,7 @@ public class UserManagementController {
      * @param role one of: ADMIN, USER, CUSTOMER, PARTNER, GUEST
      */
     @GetMapping("/api/admin/users/{role}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER')")
     public ResponseEntity<List<ReqRes>> getUsersByRole(@PathVariable UserRole role) {
         return usersManagementService.getUsersByRole(role);
     }
@@ -142,10 +131,23 @@ public class UserManagementController {
      * @param userId the target user's MySQL id
      */
     @GetMapping("/api/user/get-users/{userId}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER')")
     public ResponseEntity<ReqRes> getUserById(@PathVariable Long userId) {
         return ResponseEntity.ok(usersManagementService.getUsersById(userId));
     }
+
+    // /**
+    //  * PUT /api/admin/users/{userId}/role
+    //  * ADMIN-only: change the role of any user.
+    //  */
+    // @PutMapping("/api/admin/users/{userId}/role")
+    // @PreAuthorize("hasRole('ADMIN')")
+    // public ResponseEntity<ReqRes> changeUserRole(
+    //         @PathVariable Long userId,
+    //         @RequestParam String role) {
+    //     return ResponseEntity.ok(usersManagementService.changeRole(userId, role));
+    // }    
+
 
     /**
      * PUT /api/user/update
@@ -159,13 +161,14 @@ public class UserManagementController {
      * @param file optional new profile picture (replaces the old one in GridFS)
      */
     @PutMapping("/api/user/update")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ReqRes> updateUser(
         @RequestParam(required = false) String     name,
         @RequestParam(required = false) String     email,
         @RequestParam(required = false) String     password,
         @RequestParam(required = false) String     telephone,
-        @RequestParam(required = false) UserRole   role,
-        @RequestParam(required = false) MultipartFile file
+        @RequestParam(required = false) MultipartFile file,
+        @AuthenticationPrincipal UserDetails user
     ) throws IOException {
 
         // ── Resolve the caller's identity from the security context ────────────
@@ -174,17 +177,17 @@ public class UserManagementController {
             throw new RuntimeException("User is not authenticated");
         }
 
+        OurUsers userdb = userRepository.findByName(user.getUsername()).get();
+
         // Look up the user by email (JWT subject) to get their MySQL id
         Long userId = userRepository
             .findByEmail(auth.getName())
             .orElseThrow(() -> new RuntimeException("Authenticated user not found in database"))
             .getUserid();
 
-        ReqRes reqres = new ReqRes(name, email, telephone, password, role);
+        ReqRes reqres = new ReqRes(name, email, telephone, password, userdb.getRole());
         return ResponseEntity.ok(usersManagementService.updateUser(userId, reqres, file));
     }
-
-    // ─── SHARED (ADMIN + USER) ───────────────────────────────────────────────────
 
     /**
      * GET /api/adminuser/get-profile

@@ -22,6 +22,14 @@ public interface UserRepository extends JpaRepository<OurUsers, Long> {
     Optional<OurUsers> findByEmail(String email);
 
     /**
+     * Find by username optional.
+     *
+     * @param username the username
+     * @return the optional
+     */    
+    Optional<OurUsers> findByName(String name);
+
+    /**
      * Find by role list.
      *
      * @param role the role

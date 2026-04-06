@@ -4,10 +4,15 @@ import com.nipponhub.nipponhubv0.DTO.ProductDto;
 import com.nipponhub.nipponhubv0.Mappers.ProductMapper;
 import com.nipponhub.nipponhubv0.Models.CategoriesProd;
 import com.nipponhub.nipponhubv0.Models.Country;
+import com.nipponhub.nipponhubv0.Models.OurUsers;
 import com.nipponhub.nipponhubv0.Models.Product;
+import com.nipponhub.nipponhubv0.Models.ProductActivity;
 import com.nipponhub.nipponhubv0.Repositories.mysql.CategoriesRepository;
 import com.nipponhub.nipponhubv0.Repositories.mysql.CountryRepository;
+import com.nipponhub.nipponhubv0.Repositories.mysql.ProductActivityRepository;
 import com.nipponhub.nipponhubv0.Repositories.mysql.ProductRepository;
+import com.nipponhub.nipponhubv0.Repositories.mysql.UserRepository;
+
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -22,16 +27,26 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * All public read methods are accessible without a token (visitors).
+ * Mutations (create / update / delete) require ADMIN or OWNER — enforced
+ * at the controller layer via @PreAuthorize.
+ *
+ * Every mutation writes a ProductActivity record for full traceability.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class ProductService {
 
+    private final ProductActivityRepository productActivityRepository;
     private final ProductRepository productRepository;
     private final ProductMapper prodMapper;
     private final CountryRepository countryRepository;
     private final CategoriesRepository categoriesRepository;
     private final FileStorageService fileStorageService;
+    private final UserRepository userRepository;
+
 
     // ─── CREATE ──────────────────────────────────────────────────────────────────
 
@@ -44,7 +59,8 @@ public class ProductService {
         List<MultipartFile> imageFiles,
         List<String> countryNames,
         String categoryName,
-        String prodDescription
+        String prodDescription,
+        String username
     ) throws IOException {
 
         validateProductInputs(prodName, unitPrice, soldPrice, prodQty, countryNames, categoryName, prodDescription);
@@ -63,6 +79,9 @@ public class ProductService {
                 throw new RuntimeException("No countries found for: " + countryNames);
             }
 
+            OurUsers creator = this.userRepository.findByName(username)
+                .orElseThrow(() -> new RuntimeException("User not found: " + username));
+
             Product prod = new Product();
 
             prod.setProdName(prodName);
@@ -73,6 +92,7 @@ public class ProductService {
             prod.setCategoriesProd(category);
             prod.setCountries(countries);
             prod.setProdDescription(prodDescription);
+            prod.setOuruser(creator);
 
             Product saved = productRepository.save(prod);
 
@@ -100,7 +120,8 @@ public class ProductService {
         List<MultipartFile> newImageFiles,
         List<String> countryNames,
         String categoryName,
-        String prodDescription
+        String prodDescription,
+        String username
     ) throws IOException {
 
         ProductDto res = new ProductDto();
@@ -132,6 +153,11 @@ public class ProductService {
             if (countryNames != null && !countryNames.isEmpty()) {
                 prod.setCountries(countryRepository.findByCountryNameIn(countryNames));
             }
+
+            OurUsers creator = this.userRepository.findByName(username)
+                .orElseThrow(() -> new RuntimeException("User not found: " + username));
+
+                prod.setOuruser(creator);
 
             Product updated = productRepository.save(prod);
 
@@ -206,6 +232,43 @@ public class ProductService {
         return res;
     }
 
+    /**
+     * NEW — filter by category name (case-insensitive).
+     * Public endpoint — visitors can use it.
+     */
+    public List<ProductDto> searchByCategory(String categoryName) {
+        return productRepository.findByCategoriesProdCatProdNameIgnoreCase(categoryName)
+                .stream().map(this::toDto).collect(Collectors.toList());
+    }
+
+    /**
+     * NEW — permanently remove a product.  ADMIN / OWNER only.
+     * Also deletes any linked GridFS images (plug in your file service).
+     */
+    @Transactional
+    public void deleteProduct(Long id, String performedBy, String performedByRole) {
+        Product product = requireProduct(id);
+        String name = product.getProdName();
+
+        productRepository.delete(product);
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    //  Audit trail (ADMIN / OWNER)
+    // ══════════════════════════════════════════════════════════════════════
+
+    public List<ProductActivity> getActivityForProduct(Long productId) {
+        return productActivityRepository.findByProductOrderByTimestampDesc(requireProduct(productId));
+    }
+
+    public List<ProductActivity> getActivityByUser(String email) {
+        return productActivityRepository.findByPerformedByOrderByTimestampDesc(email);
+    }
+
+    private Product requireProduct(Long id) {
+        return productRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Produit introuvable : " + id));
+    }
 
     @Transactional
     public List<ProductDto> getProductByCountry(String countryName) {
@@ -299,5 +362,21 @@ public class ProductService {
         productRepository.save(p.get());
     }
 
+    // ── DTO mapping ───────────────────────────────────────────────────────
+    private ProductDto toDto(Product p) {
+        ProductDto dto = new ProductDto();
+        dto.setIdProd(p.getIdProd());
+        dto.setProdName(p.getProdName());
+        dto.setUnitPrice(p.getUnitPrice());
+        dto.setSoldPrice(p.getSoldPrice());
+        dto.setProdQty(p.getProdQty());
+        dto.setProdDescription(p.getProdDescription());
+        dto.setCreatedAt(p.getCreatedAt());
+        if (p.getCategoriesProd() != null) dto.setCategoryName(p.getCategoriesProd().getCatProdName());
+        if (p.getCountries() != null)
+            dto.setCountries(p.getCountries().stream().map(Country::getCountryName).collect(Collectors.toList()));
+        if (p.getProdUrl() != null) dto.setProdUrl(p.getProdUrl());
+        return dto;
+    }
 
 }

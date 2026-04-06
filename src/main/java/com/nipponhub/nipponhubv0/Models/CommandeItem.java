@@ -1,6 +1,9 @@
 package com.nipponhub.nipponhubv0.Models;
 
 import jakarta.persistence.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.math.BigDecimal;
  
 /**
@@ -10,6 +13,8 @@ import java.math.BigDecimal;
  */
 @Entity
 @Table(name = "commande_item")
+@Data
+@NoArgsConstructor
 public class CommandeItem {
  
     @Id

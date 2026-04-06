@@ -1,11 +1,15 @@
 package com.nipponhub.nipponhubv0.Controllers;
 
 import com.nipponhub.nipponhubv0.DTO.ProductDto;
+import com.nipponhub.nipponhubv0.Models.ProductActivity;
 import com.nipponhub.nipponhubv0.Services.ProductService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -33,6 +37,7 @@ public class ProductController {
      * FIX: Added error handling for IllegalArgumentException (validation errors).
      */
     @PostMapping("/newProduct")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER')")
     public ResponseEntity<?> newProduct(
         @RequestParam(required = false, name = "ProdName")    String ProdName,
         @RequestParam(required = false, name = "UnitPrice")   BigDecimal UnitPrice,
@@ -41,13 +46,23 @@ public class ProductController {
         @RequestParam(required = false, name = "ProdUrl")     List<MultipartFile> ProdUrl,
         @RequestParam(required = false, name = "Country")     List<String> Country,
         @RequestParam(required = false, name = "category")    String category,
-        @RequestParam(required = false, name = "prodDescription")    String prodDescription
+        @RequestParam(required = false, name = "prodDescription")    String prodDescription,
+        @AuthenticationPrincipal UserDetails user
     ) throws IOException {
 
         try {
+            String role = user.getAuthorities().iterator().next().getAuthority()
+                        .replace("ROLE_", "");
+
+            if (!role.equals("ADMIN") && !role.equals("OWNER")) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("error", "Access denied: insufficient permissions"));
+            }
+
             ProductDto result = productServices.createProduct(
-                ProdName, UnitPrice, SoldPrice, ProdQty, ProdUrl, Country, category, prodDescription
+                ProdName, UnitPrice, SoldPrice, ProdQty, ProdUrl, Country, category, prodDescription, user.getUsername()
             );
+
             return ResponseEntity.status(HttpStatus.CREATED).body(result);
 
         } catch (IllegalArgumentException e) {
@@ -76,12 +91,17 @@ public class ProductController {
         @RequestParam(required = false, name = "ProdUrl")     List<MultipartFile> ProdUrl,
         @RequestParam(required = false, name = "Country")     List<String> Country,
         @RequestParam(required = false, name = "category")    String category,
-        @RequestParam(required = false, name = "prodDescription")    String prodDescription
+        @RequestParam(required = false, name = "prodDescription")    String prodDescription,
+        @AuthenticationPrincipal UserDetails user
 
     ) throws IOException {
 
+         String role = user.getAuthorities().iterator().next().getAuthority()
+                        .replace("ROLE_", "");
+
+
         ProductDto result = productServices.updateProduct(
-            idProd, ProdName, UnitPrice, SoldPrice, ProdQty, ProdUrl, Country, category, prodDescription
+            idProd, ProdName, UnitPrice, SoldPrice, ProdQty, ProdUrl, Country, category, prodDescription, role
         );
 
         // If service set a message, something went wrong
@@ -135,17 +155,61 @@ public class ProductController {
     }
 
 
-    // @GetMapping("/searchByCategory")
-    // public ResponseEntity<List<ProductDto>> getProductsByCategory(@RequestParam String category) {
-    //     List<ProductDto> products = productServices.getProductsByCategory(category);
-    //     return ResponseEntity.ok(products);
-    // }
+    /**
+     * NEW  GET /api/v0/product/searchByCategory?category=...
+     * Visitors can filter the catalogue by category.
+     */
+    @GetMapping("/searchByCategory")
+    public ResponseEntity<List<ProductDto>> searchByCategory(@RequestParam String category) {
+        return ResponseEntity.ok(productServices.searchByCategory(category));
+    }
 
     @GetMapping("/searchByCountry")
     public ResponseEntity<List<ProductDto>> getProductsByCountry(@RequestParam String country) {
         List<ProductDto> products = productServices.getProductByCountry(country);
         return ResponseEntity.ok(products);
     }
+
+    /** 
+          * NEW  DELETE /api/v0/product/{idProd}
+     * Permanently deletes a product and its GridFS images.
+     */
+    @DeleteMapping("/{idProd}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER')")
+    public ResponseEntity<Void> deleteProduct(
+            @PathVariable Long idProd,
+            @AuthenticationPrincipal UserDetails user) {
+
+        String role = user.getAuthorities().iterator().next().getAuthority()
+                        .replace("ROLE_", "");
+        productServices.deleteProduct(idProd, user.getUsername(), role);
+        return ResponseEntity.noContent().build();
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    //  Audit trail  (ADMIN / OWNER)
+    // ══════════════════════════════════════════════════════════════════════
+
+    /**
+     * NEW  GET /api/v0/product/{idProd}/activity
+     * Full activity log for one product (who created, updated, ordered, delivered…).
+     */
+    @GetMapping("/{idProd}/activity")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER')")
+    public ResponseEntity<List<ProductActivity>> getProductActivity(@PathVariable Long idProd) {
+        return ResponseEntity.ok(productServices.getActivityForProduct(idProd));
+    }
+
+    /**
+     * NEW  GET /api/v0/product/activity/user?email=...
+     * All actions performed by a specific user across all products.
+     */
+    @GetMapping("/activity/user")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER')")
+    public ResponseEntity<List<ProductActivity>> getActivityByUser(@RequestParam String email) {
+        return ResponseEntity.ok(productServices.getActivityByUser(email));
+    }
+
     // ─── HEALTH CHECK ────────────────────────────────────────────────────────────
 
     @GetMapping("/greetings")
