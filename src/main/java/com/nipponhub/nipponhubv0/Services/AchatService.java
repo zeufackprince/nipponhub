@@ -27,7 +27,6 @@ import lombok.AllArgsConstructor;
 public class AchatService {
 
     private final AchatRepository achatRepository;
-    private final ProductService productService;
     private final ProductActivityRepository activityRepos;
     private final ProductRepository productRepository;
 

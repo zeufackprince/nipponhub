@@ -248,7 +248,7 @@ public class ProductService {
     @Transactional
     public void deleteProduct(Long id, String performedBy, String performedByRole) {
         Product product = requireProduct(id);
-        String name = product.getProdName();
+        // String name = product.getProdName();
 
         productRepository.delete(product);
     }
