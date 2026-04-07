@@ -71,6 +71,7 @@ public class SecurityConfig {
      */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception{
+        httpSecurity.addFilterBefore(new SimpleRateLimitFilter(), UsernamePasswordAuthenticationFilter.class);
         httpSecurity.csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(request-> request.requestMatchers("/auth/**", 
@@ -115,7 +116,7 @@ public class SecurityConfig {
 
                 // ── User management ────────────────────────────────────
                 .requestMatchers("/api/admin/**").hasAnyRole("ADMIN","OWNER")
-                .requestMatchers("/api/adminuser/**").hasAnyRole("ADMIN","OWNER")
+                .requestMatchers("/api/adminuser/**").hasAnyRole("ADMIN","OWNER","CLIENT")
                 .requestMatchers(HttpMethod.PUT, "/api/user/update").authenticated()
                 .requestMatchers("/api/user/**").authenticated()
                         .anyRequest().authenticated())

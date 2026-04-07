@@ -40,8 +40,18 @@ public class VenteService {
         vente.setDate(LocalDate.now());
 
         for (VenteItem item : vente.getItems()) {
-            Product prod = productRepository.findById(item.getProduct().getIdProd())
-                .orElseThrow(() -> new EntityNotFoundException("Produit non trouvé avec ID: " + item.getProduct().getIdProd()));
+            // ✅ Handle case where product is null but productId is provided (from JSON deserialization)
+            Long productId;
+            if (item.getProduct() != null) {
+                productId = item.getProduct().getIdProd();
+            } else if (item.getProductId() != null) {
+                productId = item.getProductId();
+            } else {
+                throw new IllegalArgumentException("VenteItem must have either product object or productId");
+            }
+            
+            Product prod = productRepository.findById(productId)
+                .orElseThrow(() -> new EntityNotFoundException("Produit non trouvé avec ID: " + productId));
 
             BigDecimal qte = BigDecimal.valueOf(item.getQuantite());
             BigDecimal itemTotal;
@@ -62,11 +72,12 @@ public class VenteService {
 
             item.setPrix(itemTotal);
             item.setGain(itemGain);
+            item.setProduct(prod);  // ✅ Ensure product is set
             item.setVente(vente);
         }
 
         Vente saved = venteRepo.save(vente);
-        return venteMapper.mapVenteToDto(saved, "Vente enregistrée avec succès");
+        return venteMapper.toDto(saved, "Vente enregistrée avec succès");
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -115,6 +126,7 @@ public class VenteService {
             vi.setPrixVendu(prixVendu);
             vi.setPrix(totalLigne);
             vi.setGain(gainLigne);
+            vi.setVente(vente);  // ✅ Set the vente reference for proper cascading
             venteItems.add(vi);
  
             // Decrement stock
@@ -139,9 +151,19 @@ public class VenteService {
  
         List<VenteItem> items = new ArrayList<>();
         for (VenteItem reqItem : request.getItems()) {
-            Product product = productRepository.findById(reqItem.getProduct().getIdProd())
+            // ✅ Handle case where product is null but productId is provided (from JSON deserialization)
+            Long productId;
+            if (reqItem.getProduct() != null) {
+                productId = reqItem.getProduct().getIdProd();
+            } else if (reqItem.getProductId() != null) {
+                productId = reqItem.getProductId();
+            } else {
+                throw new IllegalArgumentException("VenteItem must have either product object or productId");
+            }
+            
+            Product product = productRepository.findById(productId)
                     .orElseThrow(() -> new EntityNotFoundException(
-                            "Produit non trouvé avec ID : " + reqItem.getProduct().getIdProd()));
+                            "Produit non trouvé avec ID : " + productId));
  
             int qty = reqItem.getQuantite();
             if (product.getProdQty() < qty) {
@@ -165,6 +187,7 @@ public class VenteService {
             vi.setPrixVendu(prixVendu);
             vi.setPrix(total);
             vi.setGain(gain);
+            vi.setVente(vente);  // ✅ Set vente reference
             items.add(vi);
  
             product.setProdQty(product.getProdQty() - qty);
@@ -182,7 +205,7 @@ public class VenteService {
             throw new EntityNotFoundException("No sales data found in DB!!");
         }
         return allVente.stream()
-                .map(vente -> venteMapper.mapVenteToDto(vente, "Data fetched with success"))
+                .map(vente -> venteMapper.toDto(vente, "Ventes fetched successfully"))
                 .collect(Collectors.toList());
     }
 
@@ -190,7 +213,7 @@ public class VenteService {
     public VenteDto getVenteById(Long id) {
         Vente vente = venteRepo.findById(id)
             .orElseThrow(() -> new EntityNotFoundException("Vente with ID " + id + " not found"));
-        return venteMapper.mapVenteToDto(vente, "Vente fetched successfully");
+        return venteMapper.toDto(vente, "Vente fetched successfully");
     }
 
     @Transactional(readOnly = true)
@@ -200,7 +223,7 @@ public class VenteService {
             throw new EntityNotFoundException("No ventes found for date " + date);
         }
         return ventes.stream()
-                .map(vente -> venteMapper.mapVenteToDto(vente, "Ventes fetched successfully"))
+                .map(vente -> venteMapper.toDto(vente, "Ventes fetched successfully"))
                 .collect(Collectors.toList());
     }
 

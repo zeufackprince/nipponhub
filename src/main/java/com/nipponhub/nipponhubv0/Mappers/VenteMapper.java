@@ -106,22 +106,25 @@ public class VenteMapper {
         int totalItem         = 0;
         List<VenteItemDetailDto> itemDtos = new ArrayList<>();
  
-        for (VenteItem item : v.getItems()) {
-            VenteItemDetailDto i = new VenteItemDetailDto();
-            i.setProductId(item.getProduct().getIdProd());
-            i.setProductName(item.getProduct().getProdName());
-            i.setQuantite(item.getQuantite());
-            i.setPrixUnitaire(item.getProduct().getUnitPrice());
-            i.setPrixVendu(item.getPrixVendu());
-            i.setTotal(item.getPrix());
-            i.setGain(item.getGain());
- 
-            coutTotal  = coutTotal.add(item.getProduct().getUnitPrice()
-                                        .multiply(BigDecimal.valueOf(item.getQuantite())));
-            prixVendu  = prixVendu.add(item.getPrix() != null ? item.getPrix() : BigDecimal.ZERO);
-            gain       = gain.add(item.getGain() != null ? item.getGain() : BigDecimal.ZERO);
-            totalItem += item.getQuantite();
-            itemDtos.add(i);
+        // ✅ Null-safe iteration over items
+        if (v.getItems() != null && !v.getItems().isEmpty()) {
+            for (VenteItem item : v.getItems()) {
+                VenteItemDetailDto i = new VenteItemDetailDto();
+                i.setProductId(item.getProduct().getIdProd());
+                i.setProductName(item.getProduct().getProdName());
+                i.setQuantite(item.getQuantite());
+                i.setPrixUnitaire(item.getProduct().getUnitPrice());
+                i.setPrixVendu(item.getPrixVendu());
+                i.setTotal(item.getPrix());
+                i.setGain(item.getGain());
+         
+                coutTotal  = coutTotal.add(item.getProduct().getUnitPrice()
+                                            .multiply(BigDecimal.valueOf(item.getQuantite())));
+                prixVendu  = prixVendu.add(item.getPrix() != null ? item.getPrix() : BigDecimal.ZERO);
+                gain       = gain.add(item.getGain() != null ? item.getGain() : BigDecimal.ZERO);
+                totalItem += item.getQuantite();
+                itemDtos.add(i);
+            }
         }
  
         dto.setCoutTotal(coutTotal);

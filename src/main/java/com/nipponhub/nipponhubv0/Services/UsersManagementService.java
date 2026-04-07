@@ -5,6 +5,8 @@ import com.nipponhub.nipponhubv0.Mappers.UserMapper;
 import com.nipponhub.nipponhubv0.Models.Enum.UserRole;
 import com.nipponhub.nipponhubv0.Models.OurUsers;
 import com.nipponhub.nipponhubv0.Repositories.mysql.UserRepository;
+import com.nipponhub.nipponhubv0.util.PasswordValidator;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -74,6 +76,13 @@ public class UsersManagementService {
         // ── Default role to USER if the caller did not provide one ────────────
         if (reqres.getRole() == null) {
             reqres.setRole(UserRole.USER);
+        }
+
+        // Validate password strength
+        if (!PasswordValidator.isValid(reqres.getPassword())) {
+            resp.setStatusCode(400);
+            resp.setError(PasswordValidator.getErrorMessage());
+            return resp;
         }
 
         try {
@@ -388,6 +397,51 @@ public class UsersManagementService {
             log.error("Failed to delete user {}: {}", userId, e.getMessage(), e);
             resp.setStatusCode(500);
             resp.setMessage("Error: " + e.getMessage());
+        }
+        return resp;
+    }
+
+    /**
+     * Change the role of a user.
+     * Restricted to ADMIN users via @PreAuthorize in the controller.
+     *
+     * @param userId the target user's MySQL id
+     * @param role   the new role as a string (must match a valid UserRole enum constant)
+     * @return ReqRes with updated user data, or error details on failure
+     */
+    public ReqRes changeRole(Long userId, String role) {
+        ReqRes resp = new ReqRes();
+        try {
+            // ── Validate that the role string is a valid UserRole ────────────────
+            UserRole newRole;
+            try {
+                newRole = UserRole.valueOf(role.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                log.warn("Invalid role provided: {}. Valid roles are: {}", role, 
+                    String.join(", ", java.util.Arrays.stream(UserRole.values())
+                        .map(Enum::name).collect(Collectors.toList())));
+                resp.setStatusCode(400);
+                resp.setError("Invalid role: " + role + ". Valid roles are: ADMIN, USER, CUSTOMER, PARTNER, GUEST");
+                return resp;
+            }
+
+            // ── Find the user ─────────────────────────────────────────────────────
+            OurUsers user = usersRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+
+            // ── Update and persist ────────────────────────────────────────────────
+            user.setRole(newRole);
+            OurUsers savedUser = usersRepo.save(user);
+
+            log.info("User role changed — userId: {}, newRole: {}", userId, newRole);
+            resp = UserMapper.toResponse(savedUser, baseUrl);
+            resp.setMessage("User role updated successfully to: " + newRole);
+            resp.setStatusCode(200);
+
+        } catch (Exception e) {
+            log.error("Failed to change role for user {}: {}", userId, e.getMessage(), e);
+            resp.setStatusCode(500);
+            resp.setError("Error: " + e.getMessage());
         }
         return resp;
     }

@@ -3,992 +3,935 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nipponhub API Tester • Frontend complet</title>
+    <title>Nipponhub API Tester v3</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
-        body { font-family: 'Inter', system_ui, sans-serif; }
-        .response-json { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
-        .tab-active { border-bottom: 3px solid #e11d48; color: #e11d48; }
-        textarea, input, select { color: #f4f4f5; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        .response-json { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+        .tab-active { color: #e11d48; border-bottom: 2px solid #e11d48; }
+        .method-get    { background:#16a34a22; color:#4ade80; }
+        .method-post   { background:#2563eb22; color:#60a5fa; }
+        .method-put    { background:#d9770622; color:#fb923c; }
+        .method-delete { background:#dc262622; color:#f87171; }
+        input, textarea, select { color: #f4f4f5; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 3px; }
     </style>
 </head>
 <body class="bg-zinc-950 text-zinc-100">
-    <div class="flex h-screen overflow-hidden">
-        <!-- SIDEBAR -->
-        <div class="w-72 bg-zinc-900 border-r border-zinc-800 flex flex-col">
-            <div class="p-6 border-b border-zinc-800">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-rose-600 rounded-2xl flex items-center justify-center text-white font-bold text-2xl">N</div>
-                    <div>
-                        <h1 class="text-3xl font-semibold tracking-tight">Nipponhub</h1>
-                        <p class="text-xs text-zinc-500 -mt-1">API Tester v2.0</p>
-                    </div>
-                </div>
-            </div>
+<div class="flex h-screen overflow-hidden">
 
-            <!-- Token status -->
-            <div id="token-status" class="mx-4 mt-4 p-4 bg-zinc-800 rounded-3xl text-sm">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-2">
-                        <i class="fa-solid fa-circle text-red-400" id="token-dot"></i>
-                        <span id="token-text" class="font-medium">Déconnecté</span>
-                    </div>
-                    <button onclick="logout()"
-                            class="text-xs px-3 py-1 bg-zinc-700 hover:bg-rose-600 rounded-2xl transition-colors">
-                        Déconnexion
-                    </button>
-                </div>
-                <div id="user-info" class="mt-3 text-xs text-zinc-400 hidden">
-                    <div id="current-user-name"></div>
-                    <div id="current-user-role" class="inline-block px-2 py-px bg-amber-500 text-white rounded-xl text-[10px] mt-1"></div>
-                </div>
-            </div>
-
-            <!-- Navigation -->
-            <nav class="flex-1 overflow-y-auto px-3 py-6 space-y-1">
-                <a onclick="setActiveTab(0)" class="tab flex items-center gap-3 px-4 py-3 rounded-3xl hover:bg-zinc-800 text-sm font-medium cursor-pointer tab-active" id="tab-0">
-                    <i class="fa-solid fa-right-to-bracket w-5"></i>
-                    Authentification
-                </a>
-                <a onclick="setActiveTab(1)" class="tab flex items-center gap-3 px-4 py-3 rounded-3xl hover:bg-zinc-800 text-sm font-medium cursor-pointer" id="tab-1">
-                    <i class="fa-solid fa-users w-5"></i>
-                    Utilisateurs
-                </a>
-                <a onclick="setActiveTab(2)" class="tab flex items-center gap-3 px-4 py-3 rounded-3xl hover:bg-zinc-800 text-sm font-medium cursor-pointer" id="tab-2">
-                    <i class="fa-solid fa-box w-5"></i>
-                    Produits
-                </a>
-                <a onclick="setActiveTab(3)" class="tab flex items-center gap-3 px-4 py-3 rounded-3xl hover:bg-zinc-800 text-sm font-medium cursor-pointer" id="tab-3">
-                    <i class="fa-solid fa-tags w-5"></i>
-                    Catégories
-                </a>
-                <a onclick="setActiveTab(4)" class="tab flex items-center gap-3 px-4 py-3 rounded-3xl hover:bg-zinc-800 text-sm font-medium cursor-pointer" id="tab-4">
-                    <i class="fa-solid fa-globe w-5"></i>
-                    Pays
-                </a>
-                <a onclick="setActiveTab(5)" class="tab flex items-center gap-3 px-4 py-3 rounded-3xl hover:bg-zinc-800 text-sm font-medium cursor-pointer" id="tab-5">
-                    <i class="fa-solid fa-images w-5"></i>
-                    Fichiers / Images
-                </a>
-                <a onclick="setActiveTab(6)" class="tab flex items-center gap-3 px-4 py-3 rounded-3xl hover:bg-zinc-800 text-sm font-medium cursor-pointer" id="tab-6">
-                    <i class="fa-solid fa-cart-plus w-5"></i>
-                    Achats
-                </a>
-                <a onclick="setActiveTab(7)" class="tab flex items-center gap-3 px-4 py-3 rounded-3xl hover:bg-zinc-800 text-sm font-medium cursor-pointer" id="tab-7">
-                    <i class="fa-solid fa-receipt w-5"></i>
-                    Ventes
-                </a>
-            </nav>
-
-            <div class="p-4 border-t border-zinc-800 text-xs text-zinc-500 flex items-center gap-2">
-                <div class="flex-1">Backend :</div>
-                <div class="font-mono bg-zinc-800 px-2 py-1 rounded-2xl">http://localhost:8080</div>
-            </div>
-        </div>
-
-        <!-- MAIN CONTENT -->
-        <div class="flex-1 flex flex-col overflow-hidden">
-            <!-- Header -->
-            <header class="h-14 border-b border-zinc-800 bg-zinc-900 px-8 flex items-center justify-between">
-                <div id="page-title" class="text-2xl font-semibold">Authentification</div>
-
-                <div class="flex items-center gap-4">
-                    <div onclick="copyToken()" class="flex items-center gap-2 cursor-pointer text-sm bg-zinc-800 hover:bg-zinc-700 px-4 h-9 rounded-3xl">
-                        <i class="fa-solid fa-copy"></i>
-                        <span id="token-short" class="font-mono">—</span>
-                    </div>
-                    <button onclick="setActiveTab(0)" class="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors">
-                        <i class="fa-solid fa-book"></i>
-                        <span class="text-sm">Documentation</span>
-                    </button>
-                </div>
-            </header>
-
-            <!-- Content Area -->
-            <div id="content" class="flex-1 overflow-auto p-8 bg-zinc-950">
-                <!-- All tabs will be injected here by JS -->
-            </div>
-        </div>
-
-        <!-- RIGHT PANEL : RESPONSE -->
-        <div class="w-96 border-l border-zinc-800 bg-zinc-900 flex flex-col">
-            <div class="px-6 py-4 border-b border-zinc-800 font-medium flex items-center justify-between">
-                <span>Réponse de l'API</span>
-                <button onclick="clearResponse()" class="text-xs px-3 py-1 text-zinc-400 hover:text-white">Effacer</button>
-            </div>
-
-            <div id="response-panel" class="flex-1 p-6 overflow-auto">
-                <div id="response-empty" class="h-full flex flex-col items-center justify-center text-center text-zinc-500">
-                    <i class="fa-solid fa-paper-plane text-4xl mb-4 opacity-30"></i>
-                    <p class="text-sm">Aucune requête envoyée</p>
-                    <p class="text-xs mt-2">Les réponses apparaîtront ici</p>
-                </div>
-
-                <div id="response-content" class="hidden">
-                    <div class="flex items-center gap-2 mb-4">
-                        <div id="response-status" class="px-3 py-1 text-xs font-mono rounded-3xl"></div>
-                        <div id="response-time" class="text-xs text-zinc-400"></div>
-                        <div id="response-method" class="text-xs text-zinc-500 font-mono ml-auto"></div>
-                    </div>
-                    <pre id="response-json" class="response-json text-xs bg-black/60 p-4 rounded-3xl overflow-auto max-h-[calc(100vh-180px)] text-emerald-300"></pre>
+    <!-- ═══════════ SIDEBAR ═══════════ -->
+    <aside class="w-64 bg-zinc-900 border-r border-zinc-800 flex flex-col shrink-0">
+        <div class="p-5 border-b border-zinc-800">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 bg-rose-600 rounded-xl flex items-center justify-center font-bold text-xl">N</div>
+                <div>
+                    <div class="font-semibold text-lg leading-none">Nipponhub</div>
+                    <div class="text-[11px] text-zinc-500 mt-0.5">API Tester v3.0</div>
                 </div>
             </div>
         </div>
+
+        <!-- Token badge -->
+        <div class="mx-3 mt-3 px-3 py-2.5 bg-zinc-800 rounded-2xl text-xs">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-1.5">
+                    <span id="token-dot" class="w-2 h-2 rounded-full bg-zinc-600"></span>
+                    <span id="token-text" class="font-medium text-zinc-400">Non connecté</span>
+                </div>
+                <button onclick="logout()" class="text-zinc-500 hover:text-rose-400 transition-colors">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                </button>
+            </div>
+            <div id="user-info" class="hidden mt-2 pt-2 border-t border-zinc-700">
+                <div id="user-name" class="text-zinc-300 truncate"></div>
+                <div id="user-role" class="inline-block mt-1 px-2 py-0.5 rounded-lg text-[10px] font-semibold bg-amber-500/20 text-amber-400"></div>
+            </div>
+        </div>
+
+        <!-- Nav -->
+        <nav class="flex-1 overflow-y-auto px-2 py-3 space-y-0.5">
+            <div class="px-3 pt-2 pb-1 text-[10px] font-semibold text-zinc-600 uppercase tracking-wider">Public</div>
+            <a onclick="go(0)" id="tab-0" class="tab nav-item flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-zinc-800 text-sm cursor-pointer tab-active">
+                <i class="fa-solid fa-right-to-bracket w-4 text-rose-400"></i> Auth
+            </a>
+            <a onclick="go(1)" id="tab-1" class="tab nav-item flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-zinc-800 text-sm cursor-pointer">
+                <i class="fa-solid fa-store w-4 text-emerald-400"></i> Catalogue
+            </a>
+
+            <div class="px-3 pt-3 pb-1 text-[10px] font-semibold text-zinc-600 uppercase tracking-wider">Client</div>
+            <a onclick="go(2)" id="tab-2" class="tab nav-item flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-zinc-800 text-sm cursor-pointer">
+                <i class="fa-solid fa-bag-shopping w-4 text-sky-400"></i> Mes Commandes
+            </a>
+            <a onclick="go(3)" id="tab-3" class="tab nav-item flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-zinc-800 text-sm cursor-pointer">
+                <i class="fa-solid fa-user-pen w-4 text-violet-400"></i> Mon Profil
+            </a>
+
+            <div class="px-3 pt-3 pb-1 text-[10px] font-semibold text-zinc-600 uppercase tracking-wider">Admin / Owner</div>
+            <a onclick="go(4)" id="tab-4" class="tab nav-item flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-zinc-800 text-sm cursor-pointer">
+                <i class="fa-solid fa-clipboard-list w-4 text-orange-400"></i> Commandes Admin
+            </a>
+            <a onclick="go(5)" id="tab-5" class="tab nav-item flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-zinc-800 text-sm cursor-pointer">
+                <i class="fa-solid fa-box w-4 text-teal-400"></i> Produits
+            </a>
+            <a onclick="go(6)" id="tab-6" class="tab nav-item flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-zinc-800 text-sm cursor-pointer">
+                <i class="fa-solid fa-tags w-4 text-pink-400"></i> Catégories &amp; Pays
+            </a>
+            <a onclick="go(7)" id="tab-7" class="tab nav-item flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-zinc-800 text-sm cursor-pointer">
+                <i class="fa-solid fa-cart-arrow-down w-4 text-lime-400"></i> Achats
+            </a>
+            <a onclick="go(8)" id="tab-8" class="tab nav-item flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-zinc-800 text-sm cursor-pointer">
+                <i class="fa-solid fa-receipt w-4 text-purple-400"></i> Ventes directes
+            </a>
+            <a onclick="go(9)" id="tab-9" class="tab nav-item flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-zinc-800 text-sm cursor-pointer">
+                <i class="fa-solid fa-users-gear w-4 text-amber-400"></i> Utilisateurs
+            </a>
+            <a onclick="go(10)" id="tab-10" class="tab nav-item flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-zinc-800 text-sm cursor-pointer">
+                <i class="fa-solid fa-images w-4 text-cyan-400"></i> Fichiers
+            </a>
+            <a onclick="go(11)" id="tab-11" class="tab nav-item flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-zinc-800 text-sm cursor-pointer">
+                <i class="fa-solid fa-chart-line w-4 text-rose-400"></i> Activité Produits
+            </a>
+        </nav>
+
+        <div class="px-3 py-3 border-t border-zinc-800 text-[11px] text-zinc-600">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-server"></i>
+                <span class="font-mono">localhost:8080</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ═══════════ MAIN ═══════════ -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+        <header class="h-12 border-b border-zinc-800 bg-zinc-900/80 backdrop-blur px-6 flex items-center justify-between shrink-0">
+            <h1 id="page-title" class="font-semibold">Authentification</h1>
+            <button onclick="copyToken()" class="flex items-center gap-2 text-xs bg-zinc-800 hover:bg-zinc-700 px-3 h-7 rounded-lg font-mono transition-colors">
+                <i class="fa-solid fa-key text-amber-400"></i>
+                <span id="token-short">—</span>
+            </button>
+        </header>
+        <div id="content" class="flex-1 overflow-auto p-6 bg-zinc-950"></div>
     </div>
 
-    <script>
-        // ==================== CONFIG ====================
-        const BASE_URL = "http://localhost:8080";
-        let currentToken = localStorage.getItem("nipponhub_token") || null;
-        let currentRefreshToken = localStorage.getItem("nipponhub_refresh") || null;
-        let currentUser = null;
-        let activeTab = 0;
+    <!-- ═══════════ RESPONSE PANEL ═══════════ -->
+    <aside class="w-[360px] border-l border-zinc-800 bg-zinc-900 flex flex-col shrink-0">
+        <div class="px-4 py-3 border-b border-zinc-800 flex items-center justify-between">
+            <div class="flex items-center gap-2 text-sm font-medium">
+                <i class="fa-solid fa-terminal text-zinc-500"></i> Réponse API
+            </div>
+            <div class="flex items-center gap-3">
+                <div id="resp-method" class="text-[10px] font-mono px-2 py-0.5 rounded"></div>
+                <div id="resp-status"></div>
+                <div id="resp-time" class="text-[10px] text-zinc-500"></div>
+                <button onclick="clearResp()" class="text-zinc-600 hover:text-zinc-400 text-xs">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+        </div>
+        <div id="resp-panel" class="flex-1 overflow-auto p-4">
+            <div id="resp-empty" class="h-full flex flex-col items-center justify-center text-center text-zinc-700">
+                <i class="fa-solid fa-paper-plane text-4xl mb-3 opacity-40"></i>
+                <p class="text-sm">Aucune requête</p>
+            </div>
+            <pre id="resp-json" class="hidden response-json text-xs text-emerald-300 whitespace-pre-wrap break-all"></pre>
+        </div>
+    </aside>
+</div>
 
-        // ==================== UTILS ====================
-        function updateTokenUI() {
-            const dot = document.getElementById("token-dot");
-            const text = document.getElementById("token-text");
-            const short = document.getElementById("token-short");
-            const userInfo = document.getElementById("user-info");
+<script>
+// ══════════════════════════════════════════════════════════
+//  CONFIG
+// ══════════════════════════════════════════════════════════
+const BASE = "http://localhost:8080";
+let token   = localStorage.getItem("nh_token")   || null;
+let refresh = localStorage.getItem("nh_refresh") || null;
+let me      = null;
 
-            if (currentToken) {
-                dot.classList.remove("text-red-400");
-                dot.classList.add("text-emerald-400");
-                text.textContent = "Connecté";
-                short.textContent = currentToken.substring(0, 12) + "...";
-                userInfo.classList.remove("hidden");
-                if (currentUser) {
-                    document.getElementById("current-user-name").innerHTML =
-                        `<i class="fa-solid fa-user mr-1"></i> ${currentUser.name || currentUser.email || ""}`;
-                    document.getElementById("current-user-role").textContent = currentUser.role || "USER";
-                }
-            } else {
-                dot.classList.remove("text-emerald-400");
-                dot.classList.add("text-red-400");
-                text.textContent = "Déconnecté";
-                short.textContent = "—";
-                userInfo.classList.add("hidden");
-            }
+const inp = (extra="") =>
+    `bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 w-full text-sm text-zinc-100 focus:outline-none focus:border-rose-500 ${extra}`;
+const btn = (color, extra="") =>
+    `${color} hover:opacity-80 rounded-xl px-4 py-2.5 text-sm font-medium transition-opacity ${extra}`;
+const card = (extra="") => `bg-zinc-900 rounded-2xl p-5 ${extra}`;
+const label = (txt) => `<div class="text-[11px] text-zinc-500 mb-1">${txt}</div>`;
+const badge = (method) => {
+    const cls = {GET:'method-get',POST:'method-post',PUT:'method-put',DELETE:'method-delete'}[method]||'';
+    return `<span class="text-[10px] font-mono px-2 py-0.5 rounded ${cls}">${method}</span>`;
+};
+const endpoint = (method, path) =>
+    `<div class="flex items-center gap-2 mb-3">${badge(method)}<code class="text-xs text-zinc-400">${path}</code></div>`;
+
+// ══════════════════════════════════════════════════════════
+//  TOKEN / AUTH UI
+// ══════════════════════════════════════════════════════════
+function updateTokenUI() {
+    const dot  = document.getElementById("token-dot");
+    const text = document.getElementById("token-text");
+    const info = document.getElementById("user-info");
+    const ts   = document.getElementById("token-short");
+    if (token) {
+        dot.classList.replace("bg-zinc-600","bg-emerald-400");
+        text.textContent = "Connecté"; text.classList.replace("text-zinc-400","text-emerald-400");
+        ts.textContent = token.substring(0,14)+"…";
+        info.classList.remove("hidden");
+        if (me) {
+            document.getElementById("user-name").textContent = me.name || me.email || "";
+            document.getElementById("user-role").textContent = me.role || "";
         }
+    } else {
+        dot.classList.replace("bg-emerald-400","bg-zinc-600");
+        text.textContent = "Non connecté"; text.classList.replace("text-emerald-400","text-zinc-400");
+        ts.textContent = "—"; info.classList.add("hidden");
+    }
+}
+function saveToken(t, r, user) {
+    token = t; refresh = r; if(user) me = user;
+    localStorage.setItem("nh_token", t);
+    if(r) localStorage.setItem("nh_refresh", r);
+    updateTokenUI();
+}
+function logout() {
+    token = refresh = me = null;
+    localStorage.removeItem("nh_token"); localStorage.removeItem("nh_refresh");
+    updateTokenUI(); go(0); showResp({message:"Déconnecté"}, 200, 0, "LOCAL");
+}
+function copyToken() {
+    if (!token) return;
+    navigator.clipboard.writeText(token).then(() => {
+        const el = document.getElementById("token-short");
+        const old = el.textContent;
+        el.textContent = "Copié !";
+        setTimeout(() => el.textContent = old, 1500);
+    });
+}
 
-        function saveToken(token, refresh) {
-            currentToken = token;
-            currentRefreshToken = refresh;
-            localStorage.setItem("nipponhub_token", token);
-            if (refresh) localStorage.setItem("nipponhub_refresh", refresh);
-            updateTokenUI();
-        }
+// ══════════════════════════════════════════════════════════
+//  RESPONSE PANEL
+// ══════════════════════════════════════════════════════════
+function showResp(data, status, ms, method="") {
+    document.getElementById("resp-empty").classList.add("hidden");
+    const j = document.getElementById("resp-json");
+    j.classList.remove("hidden");
+    j.textContent = typeof data === "string" ? data : JSON.stringify(data, null, 2);
 
-        function logout() {
-            currentToken = null;
-            currentRefreshToken = null;
-            currentUser = null;
-            localStorage.removeItem("nipponhub_token");
-            localStorage.removeItem("nipponhub_refresh");
-            updateTokenUI();
-            setActiveTab(0);
-            showResponse({ message: "Déconnecté avec succès" }, 200, 0, "LOCAL");
-        }
+    const ok = status >= 200 && status < 300;
+    document.getElementById("resp-status").innerHTML =
+        `<span class="text-[11px] font-mono px-2 py-0.5 rounded ${ok?'bg-emerald-500/20 text-emerald-400':'bg-rose-500/20 text-rose-400'}">${status||"ERR"}</span>`;
+    document.getElementById("resp-time").textContent   = ms ? ms+"ms" : "";
+    const mEl = document.getElementById("resp-method");
+    mEl.textContent = method;
+    mEl.className = `text-[10px] font-mono px-2 py-0.5 rounded ${{'GET':'method-get','POST':'method-post','PUT':'method-put','DELETE':'method-delete'}[method]||''}`;
+}
+function clearResp() {
+    document.getElementById("resp-empty").classList.remove("hidden");
+    document.getElementById("resp-json").classList.add("hidden");
+    document.getElementById("resp-status").innerHTML="";
+    document.getElementById("resp-time").textContent="";
+}
 
-        function copyToken() {
-            if (!currentToken) return;
-            navigator.clipboard.writeText(currentToken).then(() => {
-                const el = document.getElementById("token-short");
-                const orig = el.textContent;
-                el.textContent = "Copié !";
-                setTimeout(() => el.textContent = orig, 1500);
-            });
-        }
+// ══════════════════════════════════════════════════════════
+//  API CALL
+// ══════════════════════════════════════════════════════════
+async function api(path, opts={}) {
+    const start = Date.now();
+    const method = opts.method || "GET";
+    const headers = { ...opts.headers };
+    const isPublic = path.startsWith("/auth/") || path.startsWith("/file/");
+    if (token && !isPublic) headers["Authorization"] = `Bearer ${token}`;
+    if (!(opts.body instanceof FormData)) headers["Content-Type"] = "application/json";
 
-        function showResponse(data, status = 200, time = 0, method = "") {
-            const empty = document.getElementById("response-empty");
-            const content = document.getElementById("response-content");
-            const jsonEl = document.getElementById("response-json");
-            const statusEl = document.getElementById("response-status");
-            const timeEl = document.getElementById("response-time");
-            const methodEl = document.getElementById("response-method");
+    try {
+        const res = await fetch(BASE + path, {
+            method,
+            headers: Object.keys(headers).length ? headers : undefined,
+            body: opts.body
+        });
+        let data;
+        const ct = res.headers.get("content-type")||"";
+        if (ct.includes("application/json")) data = await res.json();
+        else if (ct.includes("image/")) data = {message:"Image (binary)", url: BASE+path};
+        else data = await res.text();
 
-            empty.classList.add("hidden");
-            content.classList.remove("hidden");
+        const ms = Date.now()-start;
+        showResp(data, res.status, ms, method);
+        if (res.status === 401 && refresh && path !== "/auth/refresh") await doRefresh();
+        return { data, status: res.status };
+    } catch(e) {
+        showResp({error: e.message}, 0, Date.now()-start, method);
+        return { error: e.message };
+    }
+}
+async function doRefresh() {
+    const { data } = await api("/auth/refresh", {method:"POST", body: JSON.stringify({token: refresh})});
+    if (data?.token) saveToken(data.token, data.refreshToken||refresh);
+}
 
-            const isOk = status >= 200 && status < 300;
-            statusEl.innerHTML = `
-                <span class="${isOk ? 'bg-emerald-500' : 'bg-rose-500'} text-white px-3 py-1 rounded-3xl text-xs font-medium">
-                    ${status || "ERR"}
-                </span>`;
-            timeEl.textContent = time ? time + " ms" : "";
-            methodEl.textContent = method;
-            jsonEl.textContent = typeof data === "string" ? data : JSON.stringify(data, null, 2);
-        }
+// ══════════════════════════════════════════════════════════
+//  NAVIGATION
+// ══════════════════════════════════════════════════════════
+const TITLES = [
+    "Authentification","Catalogue (Public)","Mes Commandes","Mon Profil",
+    "Commandes — Admin","Produits","Catégories & Pays","Achats","Ventes directes",
+    "Gestion Utilisateurs","Fichiers & Images","Activité Produits"
+];
+function go(i) {
+    document.querySelectorAll(".tab").forEach((el,j) => {
+        el.classList.toggle("tab-active", i===j);
+    });
+    document.getElementById("page-title").textContent = TITLES[i];
+    document.getElementById("content").innerHTML = TABS[i]();
+    if (i===4 || i===2) {
+        const d = document.getElementById("commande-date-input") || document.getElementById("vente-search-date");
+        if(d) d.value = new Date().toISOString().slice(0,10);
+    }
+}
 
-        function clearResponse() {
-            document.getElementById("response-empty").classList.remove("hidden");
-            document.getElementById("response-content").classList.add("hidden");
-        }
+// ══════════════════════════════════════════════════════════
+//  HANDLERS — Auth
+// ══════════════════════════════════════════════════════════
+async function doRegister() {
+    const fd = new FormData();
+    ["reg-name","reg-email","reg-password","reg-tel"].forEach(id => {
+        const v = val(id); if(v) fd.append({
+            "reg-name":"name","reg-email":"email",
+            "reg-password":"password","reg-tel":"telephone"}[id], v);
+    });
+    // role is NOT sent — server always assigns CLIENT
+    const img = file("reg-img"); if(img) fd.append("profileImg", img);
+    const {data} = await api("/auth/register", {method:"POST", body:fd});
+    if(data?.userId) { me = data; updateTokenUI(); }
+}
+async function doLogin() {
+    const {data} = await api("/auth/login", {method:"POST",
+        body: JSON.stringify({email:val("login-email"), password:val("login-password")})});
+    if(data?.token) saveToken(data.token, data.refreshToken, data);
+}
+async function doRefreshManual() {
+    const t = val("manual-refresh") || refresh;
+    if(!t) return showResp({error:"Aucun refresh token"}, 400, 0, "POST");
+    const {data} = await api("/auth/refresh", {method:"POST", body: JSON.stringify({token:t})});
+    if(data?.token) saveToken(data.token, data.refreshToken||refresh);
+}
 
-        async function apiCall(endpoint, options = {}) {
-            const start = Date.now();
-            const url = BASE_URL + endpoint;
-            const headers = { ...options.headers };
-            const method = options.method || "GET";
+// ══════════════════════════════════════════════════════════
+//  HANDLERS — Catalogue (public)
+// ══════════════════════════════════════════════════════════
+async function getAllProducts()     { await api("/api/v0/product/all"); }
+async function getProductById()     { await api(`/api/v0/product/${val("pub-prod-id")}`); }
+async function searchByName()       { await api(`/api/v0/product/searchByName?prodName=${enc(val("pub-search-name"))}`); }
+async function searchByCategory()   { await api(`/api/v0/product/searchByCategory?category=${enc(val("pub-search-cat"))}`); }
+async function searchByCountry()    { await api(`/api/v0/product/searchByCountry?country=${enc(val("pub-search-country"))}`); }
+async function getAllCategoriesPub() { await api("/api/v0/categories/getAllCategories"); }
+async function getAllCountriesPub()  { await api("/api/v0/country/getAllCountries"); }
+async function healthCheck()        { await api("/api/v0/product/greetings"); }
 
-            const isPublic = endpoint.startsWith("/auth/") || endpoint.startsWith("/file/");
-            if (currentToken && !isPublic) {
-                headers["Authorization"] = `Bearer ${currentToken}`;
-            }
-            if (!(options.body instanceof FormData)) {
-                headers["Content-Type"] = "application/json";
-            }
+// ══════════════════════════════════════════════════════════
+//  HANDLERS — Client: Commandes
+// ══════════════════════════════════════════════════════════
+async function placeCommande() {
+    const raw = val("commande-json");
+    let body;
+    try { body = JSON.parse(raw); } catch { return showResp({error:"JSON invalide"}, 400, 0, "POST"); }
+    body.note = val("commande-note") || undefined;
+    await api("/api/v0/commande/new", {method:"POST", body: JSON.stringify(body)});
+}
+async function getMyOrders()  { await api("/api/v0/commande/my-orders"); }
+async function getMyOrderById() { await api(`/api/v0/commande/my-orders/${val("my-order-id")}`); }
 
-            try {
-                const res = await fetch(url, {
-                    method,
-                    headers: Object.keys(headers).length ? headers : undefined,
-                    body: options.body
-                });
+// ══════════════════════════════════════════════════════════
+//  HANDLERS — Client: Profil
+// ══════════════════════════════════════════════════════════
+async function getMyProfile() { await api("/api/adminuser/get-profile"); }
+async function updateMyProfile() {
+    const fd = new FormData();
+    [["upd-name","name"],["upd-email","email"],["upd-password","password"],["upd-tel","telephone"]]
+        .forEach(([id,key]) => { const v=val(id); if(v) fd.append(key, v); });
+    const f = file("upd-img"); if(f) fd.append("file", f);
+    await api("/api/user/update", {method:"PUT", body:fd});
+}
 
-                let data;
-                const ct = res.headers.get("content-type") || "";
-                if (ct.includes("application/json")) {
-                    data = await res.json();
-                } else if (ct.includes("image/")) {
-                    data = { message: "Image reçue (binaire)", url };
-                } else {
-                    data = await res.text();
-                }
+// ══════════════════════════════════════════════════════════
+//  HANDLERS — Admin: Commandes
+// ══════════════════════════════════════════════════════════
+async function adminGetAllCommandes()  { await api("/api/v0/commande/all"); }
+async function adminGetByStatus() {
+    const s = val("filter-status"); if(!s) return;
+    await api(`/api/v0/commande/status/${s}`);
+}
+async function adminGetCommande()   { await api(`/api/v0/commande/${val("admin-cmd-id")}`); }
+async function adminConfirm()       { await api(`/api/v0/commande/${val("admin-cmd-action-id")}/confirm`, {method:"PUT"}); }
+async function adminDeliver()       { await api(`/api/v0/commande/${val("admin-cmd-action-id")}/deliver`, {method:"PUT"}); }
+async function adminCancel()        { await api(`/api/v0/commande/${val("admin-cmd-action-id")}/cancel`, {method:"PUT"}); }
 
-                const duration = Date.now() - start;
-                showResponse(data, res.status, duration, method);
+// ══════════════════════════════════════════════════════════
+//  HANDLERS — Admin: Produits
+// ══════════════════════════════════════════════════════════
+async function createProduct() {
+    const fd = new FormData();
+    [["prod-name","ProdName"],["prod-unitprice","UnitPrice"],["prod-soldprice","SoldPrice"],
+     ["prod-qty","ProdQty"],["prod-desc","prodDescription"],["prod-category","category"]]
+        .forEach(([id,k]) => { const v=val(id); if(v) fd.append(k,v); });
+    val("prod-countries").split(",").map(s=>s.trim()).filter(Boolean).forEach(c=>fd.append("Country",c));
+    for(const f of files("prod-imgs")) fd.append("ProdUrl", f);
+    await api("/api/v0/product/newProduct", {method:"POST", body:fd});
+}
+async function updateProduct() {
+    const id = val("upd-prod-id"); if(!id) return;
+    const fd = new FormData();
+    [["upd-prod-name","ProdName"],["upd-prod-up","UnitPrice"],["upd-prod-sp","SoldPrice"],
+     ["upd-prod-qty","ProdQty"],["upd-prod-desc","prodDescription"],["upd-prod-cat","category"]]
+        .forEach(([id2,k]) => { const v=val(id2); if(v) fd.append(k,v); });
+    const c = val("upd-prod-countries");
+    if(c) c.split(",").map(s=>s.trim()).filter(Boolean).forEach(ct=>fd.append("Country",ct));
+    for(const f of files("upd-prod-imgs")) fd.append("ProdUrl", f);
+    await api(`/api/v0/product/updateProduct/${id}`, {method:"PUT", body:fd});
+}
+async function deleteProduct() {
+    const id = val("del-prod-id"); if(!id) return;
+    if(!confirm(`Supprimer le produit #${id} ?`)) return;
+    await api(`/api/v0/product/${id}`, {method:"DELETE"});
+}
+async function listAllProductsAdmin() { await api("/api/v0/product/all"); }
 
-                if (res.status === 401 && currentRefreshToken && endpoint !== "/auth/refresh") {
-                    await refreshToken();
-                }
-                return { data, status: res.status };
-            } catch (err) {
-                showResponse({ error: err.message }, 0, Date.now() - start, method);
-                return { error: err.message };
-            }
-        }
+// ══════════════════════════════════════════════════════════
+//  HANDLERS — Admin: Catégories & Pays
+// ══════════════════════════════════════════════════════════
+async function createCategory() {
+    await api("/api/v0/categories/createCategory", {method:"POST",
+        body: JSON.stringify({catProdName:val("cat-name"), catProdDes:val("cat-desc")})});
+}
+async function getAllCategories() { await api("/api/v0/categories/getAllCategories"); }
+async function getCategoryById()  { await api(`/api/v0/categories/${val("cat-id")}`); }
+async function createCountry() {
+    await api("/api/v0/country/newCountry", {method:"POST",
+        body: JSON.stringify({countryName:val("ctr-name"), countryCode:val("ctr-code")})});
+}
+async function getAllCountries()   { await api("/api/v0/country/getAllCountries"); }
+async function deleteCountry()    { await api(`/api/v0/country/deleteCountry?idCountry=${val("ctr-del-id")}`, {method:"DELETE"}); }
 
-        async function refreshToken() {
-            if (!currentRefreshToken) return;
-            const { data } = await apiCall("/auth/refresh", {
-                method: "POST",
-                body: JSON.stringify({ token: currentRefreshToken })
-            });
-            if (data && data.token) {
-                saveToken(data.token, data.refreshToken || currentRefreshToken);
-            }
-        }
+// ══════════════════════════════════════════════════════════
+//  HANDLERS — Achats
+// ══════════════════════════════════════════════════════════
+async function createAchat() {
+    const raw = val("achat-json");
+    await api("/api/v0/achat/new-achat", {method:"POST", body:raw});
+}
+async function getAllAchats() { await api("/api/v0/achat/get-all-achat"); }
 
-        function setActiveTab(tabIndex) {
-            activeTab = tabIndex;
-            document.querySelectorAll(".tab").forEach((el, i) => {
-                if (i === tabIndex) el.classList.add("tab-active");
-                else el.classList.remove("tab-active");
-            });
-            renderCurrentTab();
-        }
+// ══════════════════════════════════════════════════════════
+//  HANDLERS — Ventes directes
+// ══════════════════════════════════════════════════════════
+async function createDirectVente() {
+    const raw = val("vente-json");
+    await api("/api/v0/vente/register", {method:"POST", body:raw});
+}
+async function getAllVentes()    { await api("/api/v0/vente/all"); }
+async function getVenteById()   { await api(`/api/v0/vente/${val("vente-id")}`); }
+async function searchVenteByDate() {
+    const d = val("vente-search-date"); if(!d) return;
+    await api(`/api/v0/vente/search?date=${d}`);
+}
 
-        // ==================== SHARED INPUT STYLE ====================
-        const inp = "bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 w-full focus:outline-none focus:border-rose-500 text-zinc-100";
-        const btn = (color) => `w-full h-12 ${color} hover:opacity-90 rounded-3xl font-medium transition-opacity`;
-        const smBtn = (color) => `px-6 h-11 ${color} hover:opacity-90 rounded-3xl font-medium transition-opacity text-sm`;
+// ══════════════════════════════════════════════════════════
+//  HANDLERS — Utilisateurs
+// ══════════════════════════════════════════════════════════
+async function adminCreateUser() {
+    const fd = new FormData();
+    [["adm-usr-name","name"],["adm-usr-email","email"],["adm-usr-pass","password"],["adm-usr-tel","telephone"]]
+        .forEach(([id,k]) => { const v=val(id); if(v) fd.append(k,v); });
+    const r = val("adm-usr-role"); if(r) fd.append("role",r);
+    const f = file("adm-usr-img"); if(f) fd.append("profileImg",f);
+    await api("/api/admin/create-user", {method:"POST", body:fd});
+}
+async function adminGetAllUsers()    { await api("/api/admin/get-all-users"); }
+async function adminGetUsersByRole() { await api(`/api/admin/users/${val("filter-user-role")}`); }
+async function adminGetUserById()    { await api(`/api/admin/users/id/${val("get-user-id")}`); }
+async function adminDeleteUser() {
+    const id = val("del-user-id"); if(!id) return;
+    if(!confirm(`Supprimer l'utilisateur #${id} ?`)) return;
+    await api(`/api/admin/delete/${id}`, {method:"DELETE"});
+}
+async function adminChangeRole() {
+    await api(`/api/admin/users/${val("role-change-id")}/role?role=${val("role-change-val")}`, {method:"PUT"});
+}
 
-        // ==================== TAB RENDERS ====================
-        function renderCurrentTab() {
-            const content = document.getElementById("content");
-            const title = document.getElementById("page-title");
+// ══════════════════════════════════════════════════════════
+//  HANDLERS — Fichiers
+// ══════════════════════════════════════════════════════════
+async function uploadSingle() {
+    const f = file("single-file"); if(!f) return showResp({error:"Choisir une image"}, 400, 0,"POST");
+    const fd = new FormData(); fd.append("file", f);
+    const pid = val("single-pid"); if(pid) fd.append("productId", pid);
+    await api("/file/upload", {method:"POST", body:fd});
+}
+async function uploadBatch() {
+    const fs_ = files("batch-files"); if(!fs_.length) return showResp({error:"Choisir des images"}, 400, 0,"POST");
+    const fd = new FormData();
+    for(const f of fs_) fd.append("files", f);
+    const pid = val("batch-pid"); if(pid) fd.append("productId", pid);
+    await api("/file/upload/batch", {method:"POST", body:fd});
+}
+async function viewFile()        { const id=val("file-id"); if(id) window.open(`${BASE}/file/${id}`,"_blank"); }
+async function getFileMeta()     { await api(`/file/metadata/${val("file-id")}`); }
+async function deleteFile()      {
+    const id=val("file-id"); if(!id) return;
+    if(!confirm(`Supprimer le fichier ${id} ?`)) return;
+    await api(`/file/${id}`, {method:"DELETE"});
+}
+async function getFilesByProduct() { await api(`/file/product/${val("files-prod-id")}`); }
 
-            const tabs = [
-                // 0 ─ Auth
-                () => {
-                    title.textContent = "Authentification";
-                    return `
-                    <div class="max-w-3xl mx-auto">
-                        <div class="grid grid-cols-2 gap-8">
-                            <!-- Register -->
-                            <div class="bg-zinc-900 rounded-3xl p-8 space-y-4">
-                                <h2 class="text-lg font-semibold flex items-center gap-2"><i class="fa-solid fa-user-plus text-rose-400"></i> Inscription</h2>
-                                <p class="text-xs text-zinc-500">POST /auth/register</p>
-                                <input id="reg-name" placeholder="Nom complet" class="${inp}">
-                                <input id="reg-email" type="email" placeholder="Email" class="${inp}">
-                                <input id="reg-password" type="password" placeholder="Mot de passe" class="${inp}">
-                                <input id="reg-tel" type="tel" placeholder="Téléphone (+237...)" class="${inp}">
-                                <select id="reg-role" class="${inp}">
-                                    <option value="">Rôle par défaut (USER)</option>
-                                    <option value="ADMIN">ADMIN</option>
-                                    <option value="USER">USER</option>
-                                    <option value="CUSTOMER">CUSTOMER</option>
-                                    <option value="PARTNER">PARTNER</option>
-                                    <option value="GUEST">GUEST</option>
-                                </select>
-                                <div>
-                                    <label class="text-xs text-zinc-400 block mb-2">Photo de profil (optionnel — image/*)</label>
-                                    <input type="file" id="reg-image" accept="image/*" class="block w-full text-sm text-zinc-400
-                                        file:mr-4 file:py-2 file:px-5 file:rounded-2xl file:border-0
-                                        file:text-sm file:font-medium file:bg-rose-600 file:text-white">
-                                </div>
-                                <button onclick="handleRegister()" class="${btn('bg-rose-600')}">Créer le compte</button>
-                            </div>
+// ══════════════════════════════════════════════════════════
+//  HANDLERS — Activité Produits
+// ══════════════════════════════════════════════════════════
+async function getProductActivity() { await api(`/api/v0/product/${val("act-prod-id")}/activity`); }
+async function getActivityByUser()  { await api(`/api/v0/product/activity/user?email=${enc(val("act-user-email"))}`); }
 
-                            <!-- Login + Refresh -->
-                            <div class="space-y-6">
-                                <div class="bg-zinc-900 rounded-3xl p-8 space-y-4">
-                                    <h2 class="text-lg font-semibold flex items-center gap-2"><i class="fa-solid fa-right-to-bracket text-emerald-400"></i> Connexion</h2>
-                                    <p class="text-xs text-zinc-500">POST /auth/login</p>
-                                    <input id="login-email" type="email" value="alice@example.com" placeholder="Email" class="${inp}">
-                                    <input id="login-password" type="password" value="secret123" placeholder="Mot de passe" class="${inp}">
-                                    <button onclick="handleLogin()" class="${btn('bg-emerald-600')}">Se connecter</button>
-                                </div>
+// ══════════════════════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════════════════════
+const val   = id  => document.getElementById(id)?.value?.trim() || "";
+const file  = id  => document.getElementById(id)?.files?.[0]    || null;
+const files = id  => document.getElementById(id)?.files         || [];
+const enc   = s   => encodeURIComponent(s);
 
-                                <div class="bg-zinc-900 rounded-3xl p-8 space-y-4">
-                                    <h2 class="text-lg font-semibold flex items-center gap-2"><i class="fa-solid fa-rotate text-amber-400"></i> Rafraîchir le token</h2>
-                                    <p class="text-xs text-zinc-500">POST /auth/refresh</p>
-                                    <input id="refresh-token-input" placeholder="refreshToken (auto si connecté)" class="${inp}">
-                                    <button onclick="handleRefresh()" class="${btn('bg-amber-500')}">Rafraîchir</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>`;
-                },
+// ══════════════════════════════════════════════════════════
+//  TAB TEMPLATES
+// ══════════════════════════════════════════════════════════
+const TABS = [
 
-                // 1 ─ Users
-                () => {
-                    title.textContent = "Gestion des Utilisateurs";
-                    return `
-                    <div class="max-w-5xl mx-auto space-y-6">
-                        <!-- Quick actions -->
-                        <div class="grid grid-cols-3 gap-4">
-                            <button onclick="getProfile()" class="bg-zinc-900 hover:bg-zinc-800 rounded-3xl px-6 py-5 text-left">
-                                <i class="fa-solid fa-id-card text-xl mb-2 text-rose-400 block"></i>
-                                <div class="font-medium text-sm">Mon profil</div>
-                                <div class="text-xs text-zinc-500">GET /api/adminuser/get-profile</div>
-                            </button>
-                            <button onclick="getAllUsers()" class="bg-zinc-900 hover:bg-zinc-800 rounded-3xl px-6 py-5 text-left">
-                                <i class="fa-solid fa-users text-xl mb-2 text-sky-400 block"></i>
-                                <div class="font-medium text-sm">Tous les utilisateurs</div>
-                                <div class="text-xs text-zinc-500">GET /api/admin/get-all-users</div>
-                            </button>
-                            <button onclick="greetings()" class="bg-zinc-900 hover:bg-zinc-800 rounded-3xl px-6 py-5 text-left">
-                                <i class="fa-solid fa-heart-pulse text-xl mb-2 text-emerald-400 block"></i>
-                                <div class="font-medium text-sm">Health check</div>
-                                <div class="text-xs text-zinc-500">GET /api/v0/product/greetings</div>
-                            </button>
-                        </div>
+    // 0 — Auth
+    () => `<div class="max-w-3xl mx-auto grid grid-cols-2 gap-5">
+        <div class="${card()}">
+            <div class="font-semibold mb-1 flex items-center gap-2"><i class="fa-solid fa-user-plus text-rose-400"></i> Inscription</div>
+            ${endpoint("POST","/auth/register")}
+            <p class="text-xs text-amber-400 mb-3">⚠ Toujours créé en CLIENT. Seul un ADMIN peut créer des comptes élevés.</p>
+            <div class="space-y-2.5">
+                ${label("Nom *")}<input id="reg-name" class="${inp()}" placeholder="Alice">
+                ${label("Email *")}<input id="reg-email" type="email" class="${inp()}" placeholder="alice@example.com">
+                ${label("Mot de passe *")}<input id="reg-password" type="password" class="${inp()}" placeholder="••••••">
+                ${label("Téléphone")}<input id="reg-tel" class="${inp()}" placeholder="+237...">
+                ${label("Photo (image/*)")}<input type="file" id="reg-img" accept="image/*" class="text-xs text-zinc-400 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:bg-rose-600 file:text-white">
+            </div>
+            <button onclick="doRegister()" class="${btn('bg-rose-600 text-white','w-full mt-4')}">Créer mon compte CLIENT</button>
+        </div>
+        <div class="space-y-4">
+            <div class="${card()}">
+                <div class="font-semibold mb-1 flex items-center gap-2"><i class="fa-solid fa-right-to-bracket text-emerald-400"></i> Connexion</div>
+                ${endpoint("POST","/auth/login")}
+                <div class="space-y-2.5">
+                    ${label("Email")}<input id="login-email" type="email" class="${inp()}" value="alice@example.com">
+                    ${label("Mot de passe")}<input id="login-password" type="password" class="${inp()}" value="secret123">
+                </div>
+                <button onclick="doLogin()" class="${btn('bg-emerald-600 text-white','w-full mt-3')}">Se connecter</button>
+            </div>
+            <div class="${card()}">
+                <div class="font-semibold mb-1 flex items-center gap-2"><i class="fa-solid fa-rotate text-amber-400"></i> Rafraîchir token</div>
+                ${endpoint("POST","/auth/refresh")}
+                <input id="manual-refresh" class="${inp('mb-3')}" placeholder="refreshToken (auto si connecté)">
+                <button onclick="doRefreshManual()" class="${btn('bg-amber-500 text-white','w-full')}">Rafraîchir</button>
+            </div>
+        </div>
+    </div>`,
 
-                        <div class="grid grid-cols-2 gap-6">
-                            <!-- Get by ID -->
-                            <div class="bg-zinc-900 rounded-3xl p-6 space-y-4">
-                                <h3 class="font-medium flex items-center gap-2"><i class="fa-solid fa-magnifying-glass text-sky-400"></i> Chercher un utilisateur par ID</h3>
-                                <p class="text-xs text-zinc-500">GET /api/user/get-users/{userId} — ADMIN</p>
-                                <input id="user-id-input" type="number" value="1" placeholder="userId" class="${inp}">
-                                <button onclick="getUserById()" class="${btn('bg-sky-700')}">Chercher</button>
-                            </div>
+    // 1 — Catalogue public
+    () => `<div class="max-w-4xl mx-auto space-y-4">
+        <div class="${card('grid grid-cols-3 gap-3')}">
+            <div>
+                <div class="text-xs text-zinc-500 mb-1.5">Tous les produits</div>
+                ${endpoint("GET","/api/v0/product/all")}
+                <button onclick="getAllProducts()" class="${btn('bg-zinc-700 text-white','w-full')}">Lister</button>
+            </div>
+            <div>
+                <div class="text-xs text-zinc-500 mb-1.5">Toutes les catégories</div>
+                ${endpoint("GET","/api/v0/categories/getAllCategories")}
+                <button onclick="getAllCategoriesPub()" class="${btn('bg-zinc-700 text-white','w-full')}">Lister</button>
+            </div>
+            <div>
+                <div class="text-xs text-zinc-500 mb-1.5">Tous les pays</div>
+                ${endpoint("GET","/api/v0/country/getAllCountries")}
+                <button onclick="getAllCountriesPub()" class="${btn('bg-zinc-700 text-white','w-full')}">Lister</button>
+            </div>
+        </div>
+        <div class="${card('grid grid-cols-2 gap-4')}">
+            <div>
+                ${endpoint("GET","/api/v0/product/{id}")}
+                ${label("ID Produit")}<input id="pub-prod-id" type="number" value="1" class="${inp('mb-2')}">
+                <button onclick="getProductById()" class="${btn('bg-sky-700 text-white','w-full')}">Détail produit</button>
+            </div>
+            <div>
+                ${endpoint("GET","/api/v0/product/searchByName")}
+                ${label("Nom du produit")}<input id="pub-search-name" class="${inp('mb-2')}" placeholder="Blue Backpack">
+                <button onclick="searchByName()" class="${btn('bg-sky-700 text-white','w-full')}">Chercher par nom</button>
+            </div>
+            <div>
+                ${endpoint("GET","/api/v0/product/searchByCategory")}
+                ${label("Nom de la catégorie")}<input id="pub-search-cat" class="${inp('mb-2')}" placeholder="Bags">
+                <button onclick="searchByCategory()" class="${btn('bg-violet-600 text-white','w-full')}">Filtrer par catégorie</button>
+            </div>
+            <div>
+                ${endpoint("GET","/api/v0/product/searchByCountry")}
+                ${label("Nom du pays")}<input id="pub-search-country" class="${inp('mb-2')}" placeholder="Japan">
+                <button onclick="searchByCountry()" class="${btn('bg-teal-600 text-white','w-full')}">Filtrer par pays</button>
+            </div>
+        </div>
+        <div class="${card()}">
+            ${endpoint("GET","/api/v0/product/greetings")}
+            <button onclick="healthCheck()" class="${btn('bg-zinc-700 text-white')}"><i class="fa-solid fa-heart-pulse mr-1"></i> Health check</button>
+        </div>
+    </div>`,
 
-                            <!-- Get by role -->
-                            <div class="bg-zinc-900 rounded-3xl p-6 space-y-4">
-                                <h3 class="font-medium flex items-center gap-2"><i class="fa-solid fa-filter text-violet-400"></i> Utilisateurs par rôle</h3>
-                                <p class="text-xs text-zinc-500">GET /api/admin/users/{role} — ADMIN</p>
-                                <select id="filter-role" class="${inp}">
-                                    <option value="ADMIN">ADMIN</option>
-                                    <option value="USER" selected>USER</option>
-                                    <option value="CUSTOMER">CUSTOMER</option>
-                                    <option value="PARTNER">PARTNER</option>
-                                    <option value="GUEST">GUEST</option>
-                                </select>
-                                <button onclick="getUsersByRole()" class="${btn('bg-violet-600')}">Filtrer</button>
-                            </div>
-
-                            <!-- Delete user -->
-                            <div class="bg-zinc-900 rounded-3xl p-6 space-y-4">
-                                <h3 class="font-medium flex items-center gap-2"><i class="fa-solid fa-trash text-rose-400"></i> Supprimer un utilisateur</h3>
-                                <p class="text-xs text-zinc-500">DELETE /api/admin/delete/{userId} — ADMIN</p>
-                                <input id="delete-user-id" type="number" placeholder="userId à supprimer" class="${inp}">
-                                <button onclick="deleteUser()" class="${btn('bg-rose-700')}">Supprimer</button>
-                            </div>
-
-                            <!-- Update profile -->
-                            <div class="bg-zinc-900 rounded-3xl p-6 space-y-4">
-                                <h3 class="font-medium flex items-center gap-2"><i class="fa-solid fa-pen-to-square text-amber-400"></i> Modifier mon profil</h3>
-                                <p class="text-xs text-zinc-500">PUT /api/user/update — champs optionnels</p>
-                                <input id="upd-name" placeholder="Nouveau nom (optionnel)" class="${inp}">
-                                <input id="upd-email" type="email" placeholder="Nouvel email (optionnel)" class="${inp}">
-                                <input id="upd-password" type="password" placeholder="Nouveau mot de passe (optionnel)" class="${inp}">
-                                <input id="upd-tel" placeholder="Nouveau téléphone (optionnel)" class="${inp}">
-                                <select id="upd-role" class="${inp}">
-                                    <option value="">Rôle inchangé</option>
-                                    <option value="ADMIN">ADMIN</option>
-                                    <option value="USER">USER</option>
-                                    <option value="CUSTOMER">CUSTOMER</option>
-                                    <option value="PARTNER">PARTNER</option>
-                                    <option value="GUEST">GUEST</option>
-                                </select>
-                                <div>
-                                    <label class="text-xs text-zinc-400 block mb-1">Nouvelle photo (optionnel)</label>
-                                    <input type="file" id="upd-file" accept="image/*" class="text-sm text-zinc-400
-                                        file:mr-3 file:py-2 file:px-4 file:rounded-2xl file:border-0
-                                        file:text-xs file:font-medium file:bg-amber-500 file:text-white">
-                                </div>
-                                <button onclick="updateProfile()" class="${btn('bg-amber-500')}">Mettre à jour</button>
-                            </div>
-                        </div>
-                    </div>`;
-                },
-
-                // 2 ─ Produits
-                () => {
-                    title.textContent = "Produits";
-                    return `
-                    <div class="max-w-5xl mx-auto space-y-6">
-                        <!-- Create product -->
-                        <div class="bg-zinc-900 rounded-3xl p-8">
-                            <h3 class="font-medium mb-4 flex items-center gap-2"><i class="fa-solid fa-plus text-emerald-400"></i> Créer un produit</h3>
-                            <p class="text-xs text-zinc-500 mb-4">POST /api/v0/product/newProduct</p>
-                            <div class="grid grid-cols-2 gap-4">
-                                <input id="prod-name" placeholder="Nom du produit *" class="${inp} col-span-2">
-                                <input id="prod-unitprice" type="number" step="0.01" value="10" placeholder="Prix d'achat (UnitPrice) *" class="${inp}">
-                                <input id="prod-soldprice" type="number" step="0.01" value="15" placeholder="Prix de vente (SoldPrice) *" class="${inp}">
-                                <input id="prod-qty" type="number" value="20" placeholder="Quantité (ProdQty) *" class="${inp}">
-                                <input id="prod-category" placeholder="Catégorie (ex: Bags) *" class="${inp}">
-                                <textarea id="prod-desc" rows="2" placeholder="Description *" class="${inp} col-span-2"></textarea>
-                                <input id="prod-country" placeholder="Pays séparés par virgule (ex: Japan, France) *" class="${inp} col-span-2">
-                                <div class="col-span-2">
-                                    <label class="block text-xs text-zinc-400 mb-2">Images du produit (optionnel — image/*)</label>
-                                    <input type="file" id="prod-images" multiple accept="image/*" class="text-sm text-zinc-400
-                                        file:mr-3 file:py-2 file:px-4 file:rounded-2xl file:border-0
-                                        file:text-xs file:font-medium file:bg-emerald-600 file:text-white">
-                                </div>
-                                <button onclick="createProduct()" class="${btn('bg-emerald-600')} col-span-2">Créer le produit</button>
-                            </div>
-                        </div>
-
-                        <!-- Update product -->
-                        <div class="bg-zinc-900 rounded-3xl p-8">
-                            <h3 class="font-medium mb-4 flex items-center gap-2"><i class="fa-solid fa-pen text-amber-400"></i> Modifier un produit</h3>
-                            <p class="text-xs text-zinc-500 mb-4">PUT /api/v0/product/updateProduct/{idProd} — champs optionnels</p>
-                            <div class="grid grid-cols-2 gap-4">
-                                <input id="upd-prod-id" type="number" value="1" placeholder="idProd *" class="${inp} col-span-2">
-                                <input id="upd-prod-name" placeholder="Nouveau nom (optionnel)" class="${inp}">
-                                <input id="upd-prod-unitprice" type="number" step="0.01" placeholder="Nouveau prix d'achat" class="${inp}">
-                                <input id="upd-prod-soldprice" type="number" step="0.01" placeholder="Nouveau prix de vente" class="${inp}">
-                                <input id="upd-prod-qty" type="number" placeholder="Nouvelle quantité" class="${inp}">
-                                <input id="upd-prod-category" placeholder="Nouvelle catégorie" class="${inp}">
-                                <input id="upd-prod-country" placeholder="Nouveaux pays (virgule)" class="${inp}">
-                                <textarea id="upd-prod-desc" rows="2" placeholder="Nouvelle description" class="${inp} col-span-2"></textarea>
-                                <div class="col-span-2">
-                                    <label class="block text-xs text-zinc-400 mb-2">Nouvelles images (remplace les anciennes)</label>
-                                    <input type="file" id="upd-prod-images" multiple accept="image/*" class="text-sm text-zinc-400
-                                        file:mr-3 file:py-2 file:px-4 file:rounded-2xl file:border-0
-                                        file:text-xs file:font-medium file:bg-amber-500 file:text-white">
-                                </div>
-                                <button onclick="updateProduct()" class="${btn('bg-amber-500')} col-span-2">Mettre à jour le produit</button>
-                            </div>
-                        </div>
-
-                        <!-- Quick lookups -->
-                        <div class="grid grid-cols-2 gap-6">
-                            <div class="bg-zinc-900 rounded-3xl p-6 space-y-4">
-                                <h3 class="font-medium text-sm flex items-center gap-2"><i class="fa-solid fa-hashtag text-sky-400"></i> Produit par ID</h3>
-                                <p class="text-xs text-zinc-500">GET /api/v0/product/{idProd}</p>
-                                <input id="get-prod-id" type="number" value="1" placeholder="idProd" class="${inp}">
-                                <button onclick="getProductById()" class="${btn('bg-sky-700')}">Chercher</button>
-                            </div>
-                            <div class="bg-zinc-900 rounded-3xl p-6 space-y-4">
-                                <h3 class="font-medium text-sm flex items-center gap-2"><i class="fa-solid fa-list text-zinc-400"></i> Tous les produits</h3>
-                                <p class="text-xs text-zinc-500">GET /api/v0/product/all</p>
-                                <button onclick="listAllProducts()" class="${btn('bg-zinc-700 mt-8')}">Lister tous</button>
-                            </div>
-                            <div class="bg-zinc-900 rounded-3xl p-6 space-y-4">
-                                <h3 class="font-medium text-sm flex items-center gap-2"><i class="fa-solid fa-magnifying-glass text-violet-400"></i> Chercher par nom</h3>
-                                <p class="text-xs text-zinc-500">GET /api/v0/product/searchByName?prodName=</p>
-                                <input id="search-prod-name" placeholder="Nom du produit" class="${inp}">
-                                <button onclick="searchProductByName()" class="${btn('bg-violet-600')}">Chercher</button>
-                            </div>
-                            <div class="bg-zinc-900 rounded-3xl p-6 space-y-4">
-                                <h3 class="font-medium text-sm flex items-center gap-2"><i class="fa-solid fa-globe text-teal-400"></i> Chercher par pays</h3>
-                                <p class="text-xs text-zinc-500">GET /api/v0/product/searchByCountry?country=</p>
-                                <input id="search-prod-country" placeholder="Nom du pays" class="${inp}">
-                                <button onclick="searchProductByCountry()" class="${btn('bg-teal-600')}">Chercher</button>
-                            </div>
-                        </div>
-                    </div>`;
-                },
-
-                // 3 ─ Catégories
-                () => {
-                    title.textContent = "Catégories";
-                    return `
-                    <div class="max-w-xl mx-auto space-y-6">
-                        <!-- Create -->
-                        <div class="bg-zinc-900 rounded-3xl p-8 space-y-4">
-                            <h3 class="font-medium flex items-center gap-2"><i class="fa-solid fa-plus text-violet-400"></i> Créer une catégorie</h3>
-                            <p class="text-xs text-zinc-500">POST /api/v0/categories/createCategory</p>
-                            <input id="cat-name" placeholder="Nom de la catégorie (catProdName) *" class="${inp}">
-                            <textarea id="cat-desc" rows="3" placeholder="Description (catProdDes)" class="${inp}"></textarea>
-                            <button onclick="createCategory()" class="${btn('bg-violet-600')}">Créer catégorie</button>
-                        </div>
-
-                        <!-- List all -->
-                        <div class="bg-zinc-900 rounded-3xl p-8">
-                            <h3 class="font-medium flex items-center gap-2 mb-2"><i class="fa-solid fa-list text-zinc-400"></i> Toutes les catégories</h3>
-                            <p class="text-xs text-zinc-500 mb-4">GET /api/v0/categories/getAllCategories</p>
-                            <button onclick="getAllCategories()" class="${btn('bg-zinc-700')}">Voir toutes les catégories</button>
-                        </div>
-
-                        <!-- Get by ID -->
-                        <div class="bg-zinc-900 rounded-3xl p-8 space-y-4">
-                            <h3 class="font-medium flex items-center gap-2"><i class="fa-solid fa-hashtag text-sky-400"></i> Catégorie par ID</h3>
-                            <p class="text-xs text-zinc-500">GET /api/v0/categories/{id}</p>
-                            <input id="cat-id" type="number" value="1" placeholder="id de la catégorie" class="${inp}">
-                            <button onclick="getCategoryById()" class="${btn('bg-sky-700')}">Chercher</button>
-                        </div>
-                    </div>`;
-                },
-
-                // 4 ─ Pays
-                () => {
-                    title.textContent = "Pays";
-                    return `
-                    <div class="max-w-xl mx-auto space-y-6">
-                        <!-- Create -->
-                        <div class="bg-zinc-900 rounded-3xl p-8 space-y-4">
-                            <h3 class="font-medium flex items-center gap-2"><i class="fa-solid fa-plus text-sky-400"></i> Créer un pays</h3>
-                            <p class="text-xs text-zinc-500">POST /api/v0/country/newCountry</p>
-                            <input id="country-name" placeholder="Nom du pays (countryName)" class="${inp}">
-                            <input id="country-code" placeholder="Code ISO-2 (ex: JP)" maxlength="2" class="${inp}">
-                            <button onclick="createCountry()" class="${btn('bg-sky-600')}">Créer pays</button>
-                        </div>
-
-                        <!-- List all -->
-                        <div class="bg-zinc-900 rounded-3xl p-8">
-                            <h3 class="font-medium flex items-center gap-2 mb-2"><i class="fa-solid fa-list text-zinc-400"></i> Tous les pays</h3>
-                            <p class="text-xs text-zinc-500 mb-4">GET /api/v0/country/getAllCountries</p>
-                            <button onclick="getAllCountries()" class="${btn('bg-zinc-700')}">Lister tous les pays</button>
-                        </div>
-
-                        <!-- Delete -->
-                        <div class="bg-zinc-900 rounded-3xl p-8 space-y-4">
-                            <h3 class="font-medium flex items-center gap-2"><i class="fa-solid fa-trash text-rose-400"></i> Supprimer un pays</h3>
-                            <p class="text-xs text-zinc-500">DELETE /api/v0/country/deleteCountry?idCountry= <span class="text-amber-400">(⚠ query param, pas path)</span></p>
-                            <input id="delete-country-id" type="number" placeholder="idCountry" class="${inp}">
-                            <button onclick="deleteCountry()" class="${btn('bg-rose-700')}">Supprimer</button>
-                        </div>
-                    </div>`;
-                },
-
-                // 5 ─ Fichiers
-                () => {
-                    title.textContent = "Fichiers & Images";
-                    return `
-                    <div class="max-w-4xl mx-auto space-y-6">
-                        <div class="grid grid-cols-2 gap-6">
-                            <!-- Upload single -->
-                            <div class="bg-zinc-900 rounded-3xl p-8 space-y-4">
-                                <h3 class="font-medium flex items-center gap-2"><i class="fa-solid fa-upload text-amber-400"></i> Upload simple</h3>
-                                <p class="text-xs text-zinc-500">POST /file/upload</p>
-                                <input type="file" id="single-file" accept="image/*" class="text-sm text-zinc-400
-                                    file:mr-3 file:py-2 file:px-4 file:rounded-2xl file:border-0
-                                    file:text-xs file:font-medium file:bg-amber-500 file:text-white">
-                                <input id="file-product-id" placeholder="productId (optionnel)" class="${inp}">
-                                <button onclick="uploadSingleFile()" class="${btn('bg-amber-500')}">Uploader</button>
-                            </div>
-
-                            <!-- Upload batch -->
-                            <div class="bg-zinc-900 rounded-3xl p-8 space-y-4">
-                                <h3 class="font-medium flex items-center gap-2"><i class="fa-solid fa-layer-group text-amber-400"></i> Upload multiple</h3>
-                                <p class="text-xs text-zinc-500">POST /file/upload/batch</p>
-                                <input type="file" id="batch-files" multiple accept="image/*" class="text-sm text-zinc-400
-                                    file:mr-3 file:py-2 file:px-4 file:rounded-2xl file:border-0
-                                    file:text-xs file:font-medium file:bg-amber-500 file:text-white">
-                                <input id="batch-product-id" placeholder="productId (optionnel, lie tous les fichiers)" class="${inp}">
-                                <button onclick="uploadBatchFiles()" class="${btn('bg-amber-500')}">Uploader plusieurs</button>
-                            </div>
-                        </div>
-
-                        <!-- Actions on a file -->
-                        <div class="bg-zinc-900 rounded-3xl p-8 space-y-4">
-                            <h3 class="font-medium flex items-center gap-2"><i class="fa-solid fa-file-image text-sky-400"></i> Opérations sur un fichier (par fileId)</h3>
-                            <p class="text-xs text-zinc-500">GET /file/{fileId} • GET /file/metadata/{fileId} • DELETE /file/{fileId}</p>
-                            <input id="view-file-id" placeholder="fileId (ex: 6500f7b8a4440f1aaad12f65)" class="${inp}">
-                            <div class="flex gap-3">
-                                <button onclick="viewFile()" class="${smBtn('bg-emerald-600')}"><i class="fa-solid fa-eye mr-1"></i>Voir image</button>
-                                <button onclick="getFileMetadata()" class="${smBtn('bg-sky-700')}"><i class="fa-solid fa-info-circle mr-1"></i>Métadonnées</button>
-                                <button onclick="deleteFile()" class="${smBtn('bg-rose-700')}"><i class="fa-solid fa-trash mr-1"></i>Supprimer</button>
-                            </div>
-                        </div>
-
-                        <!-- Files by product -->
-                        <div class="bg-zinc-900 rounded-3xl p-8 space-y-4">
-                            <h3 class="font-medium flex items-center gap-2"><i class="fa-solid fa-box-open text-violet-400"></i> Fichiers d'un produit</h3>
-                            <p class="text-xs text-zinc-500">GET /file/product/{productId} — tous les FileDocument liés</p>
-                            <input id="files-product-id" type="number" value="1" placeholder="productId" class="${inp}">
-                            <button onclick="getFilesByProduct()" class="${btn('bg-violet-600')}">Voir les fichiers du produit</button>
-                        </div>
-                    </div>`;
-                },
-
-                // 6 ─ Achats
-                () => {
-                    title.textContent = "Achats (Purchases)";
-                    return `
-                    <div class="max-w-2xl mx-auto space-y-6">
-                        <!-- New achat -->
-                        <div class="bg-zinc-900 rounded-3xl p-8 space-y-4">
-                            <h3 class="font-medium flex items-center gap-2"><i class="fa-solid fa-cart-plus text-teal-400"></i> Nouvel achat</h3>
-                            <p class="text-xs text-zinc-500">POST /api/v0/achat/new-achat — augmente le stock</p>
-                            <p class="text-xs text-zinc-400">Le champ <code>date</code> est ignoré, il est fixé à aujourd'hui côté serveur.</p>
-                            <textarea id="achat-json" rows="9" class="w-full bg-black border border-zinc-800 font-mono text-xs text-emerald-300 p-4 rounded-3xl">{
+    // 2 — Mes Commandes (client)
+    () => `<div class="max-w-2xl mx-auto space-y-4">
+        <div class="${card()}">
+            <div class="font-semibold mb-1">Passer une commande</div>
+            ${endpoint("POST","/api/v0/commande/new")}
+            <p class="text-xs text-zinc-500 mb-3">Aucun stock modifié ici. Le stock est décrémenté uniquement quand un admin marque la commande DELIVERED.</p>
+            ${label("Note / adresse (optionnel)")}<input id="commande-note" class="${inp('mb-3')}" placeholder="Livraison au 123 rue...">
+            ${label("Items (JSON)")}<textarea id="commande-json" rows="7" class="${inp('font-mono text-xs mb-3')}">{
   "items": [
-    { "product": { "idProd": 1 }, "quantite": 10 },
-    { "product": { "idProd": 2 }, "quantite": 5 }
+    { "productId": 1, "quantite": 2, "prixVendu": 20.00 },
+    { "productId": 2, "quantite": 1 }
   ]
 }</textarea>
-                            <button onclick="createAchat()" class="${btn('bg-teal-600')}">Enregistrer l'achat</button>
-                        </div>
+            <button onclick="placeCommande()" class="${btn('bg-sky-600 text-white','w-full')}">Envoyer la commande</button>
+        </div>
+        <div class="${card('grid grid-cols-2 gap-3')}">
+            <div>
+                ${endpoint("GET","/api/v0/commande/my-orders")}
+                <button onclick="getMyOrders()" class="${btn('bg-zinc-700 text-white','w-full')}">Tout mon historique</button>
+            </div>
+            <div>
+                ${endpoint("GET","/api/v0/commande/my-orders/{id}")}
+                ${label("ID Commande")}<input id="my-order-id" type="number" value="1" class="${inp('mb-2')}">
+                <button onclick="getMyOrderById()" class="${btn('bg-zinc-700 text-white','w-full')}">Détail commande</button>
+            </div>
+        </div>
+    </div>`,
 
-                        <!-- List all -->
-                        <div class="bg-zinc-900 rounded-3xl p-8">
-                            <h3 class="font-medium flex items-center gap-2 mb-2"><i class="fa-solid fa-list text-zinc-400"></i> Tous les achats</h3>
-                            <p class="text-xs text-zinc-500 mb-4">GET /api/v0/achat/get-all-achat</p>
-                            <button onclick="getAllAchats()" class="${btn('bg-zinc-700')}">Voir tous les achats</button>
-                        </div>
-                    </div>`;
-                },
+    // 3 — Mon Profil (client)
+    () => `<div class="max-w-xl mx-auto space-y-4">
+        <div class="${card()}">
+            ${endpoint("GET","/api/user/profile")}
+            <button onclick="getMyProfile()" class="${btn('bg-violet-600 text-white','w-full')}">Voir mon profil</button>
+        </div>
+        <div class="${card()}">
+            <div class="font-semibold mb-1">Modifier mon profil</div>
+            ${endpoint("PUT","/api/user/update")}
+            <p class="text-xs text-amber-400 mb-3">⚠ Le champ rôle est ignoré — impossible de s'auto-promouvoir.</p>
+            <div class="space-y-2.5">
+                ${label("Nouveau nom")}<input id="upd-name" class="${inp()}" placeholder="Alice Dupont">
+                ${label("Nouvel email")}<input id="upd-email" type="email" class="${inp()}">
+                ${label("Nouveau mot de passe")}<input id="upd-password" type="password" class="${inp()}">
+                ${label("Téléphone")}<input id="upd-tel" class="${inp()}">
+                ${label("Nouvelle photo (image/*)")}<input type="file" id="upd-img" accept="image/*" class="text-xs text-zinc-400 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:bg-violet-600 file:text-white">
+            </div>
+            <button onclick="updateMyProfile()" class="${btn('bg-violet-600 text-white','w-full mt-4')}">Mettre à jour</button>
+        </div>
+    </div>`,
 
-                // 7 ─ Ventes
-                () => {
-                    title.textContent = "Ventes (Sales)";
-                    return `
-                    <div class="max-w-2xl mx-auto space-y-6">
-                        <!-- New vente -->
-                        <div class="bg-zinc-900 rounded-3xl p-8 space-y-4">
-                            <h3 class="font-medium flex items-center gap-2"><i class="fa-solid fa-receipt text-purple-400"></i> Nouvelle vente</h3>
-                            <p class="text-xs text-zinc-500">POST /api/v0/vente/register — diminue le stock, rollback si insuffisant</p>
-                            <p class="text-xs text-zinc-400"><code>prixVendu</code> optionnel. Si null/0 → prix d'achat utilisé (gain = 0).</p>
-                            <textarea id="vente-json" rows="9" class="w-full bg-black border border-zinc-800 font-mono text-xs text-emerald-300 p-4 rounded-3xl">{
+    // 4 — Commandes Admin
+    () => `<div class="max-w-4xl mx-auto space-y-4">
+        <div class="${card('grid grid-cols-2 gap-4')}">
+            <div>
+                ${endpoint("GET","/api/v0/commande/all")}
+                <button onclick="adminGetAllCommandes()" class="${btn('bg-zinc-700 text-white','w-full')}">Toutes les commandes</button>
+            </div>
+            <div>
+                ${endpoint("GET","/api/v0/commande/status/{status}")}
+                ${label("Statut")}
+                <select id="filter-status" class="${inp('mb-2')}">
+                    <option value="PENDING">PENDING</option>
+                    <option value="CONFIRMED">CONFIRMED</option>
+                    <option value="DELIVERED">DELIVERED</option>
+                    <option value="CANCELLED">CANCELLED</option>
+                </select>
+                <button onclick="adminGetByStatus()" class="${btn('bg-zinc-700 text-white','w-full')}">Filtrer par statut</button>
+            </div>
+            <div>
+                ${endpoint("GET","/api/v0/commande/{id}")}
+                ${label("ID Commande")}<input id="admin-cmd-id" type="number" value="1" class="${inp('mb-2')}">
+                <button onclick="adminGetCommande()" class="${btn('bg-sky-700 text-white','w-full')}">Détail commande</button>
+            </div>
+        </div>
+        <div class="${card()}">
+            <div class="font-semibold mb-3 flex items-center gap-2"><i class="fa-solid fa-gears text-orange-400"></i> Actions sur une commande</div>
+            <p class="text-xs text-zinc-500 mb-3">
+                <span class="text-emerald-400 font-semibold">DELIVERED</span> déclenche : décrémentation du stock + création de la Vente en DB + log d'activité.
+            </p>
+            ${label("ID Commande")}<input id="admin-cmd-action-id" type="number" value="1" class="${inp('mb-3')}">
+            <div class="flex gap-2">
+                <button onclick="adminConfirm()" class="${btn('bg-sky-600 text-white','flex-1')}"><i class="fa-solid fa-check mr-1"></i> Confirmer</button>
+                <button onclick="adminDeliver()" class="${btn('bg-emerald-600 text-white','flex-1')}"><i class="fa-solid fa-truck mr-1"></i> Livrer (DELIVER)</button>
+                <button onclick="adminCancel()"  class="${btn('bg-rose-700 text-white','flex-1')}"><i class="fa-solid fa-ban mr-1"></i> Annuler</button>
+            </div>
+        </div>
+    </div>`,
+
+    // 5 — Produits Admin
+    () => `<div class="max-w-5xl mx-auto space-y-4">
+        <div class="${card()}">
+            <div class="font-semibold mb-3">Créer un produit</div>
+            ${endpoint("POST","/api/v0/product/newProduct")}
+            <div class="grid grid-cols-2 gap-3">
+                ${label("Nom *")}<input id="prod-name" class="${inp()}" placeholder="Blue Backpack">
+                ${label("Catégorie *")}<input id="prod-category" class="${inp()}" placeholder="Bags">
+                ${label("Prix achat *")}<input id="prod-unitprice" type="number" step="0.01" value="10" class="${inp()}">
+                ${label("Prix vente *")}<input id="prod-soldprice" type="number" step="0.01" value="15" class="${inp()}">
+                ${label("Quantité *")}<input id="prod-qty" type="number" value="0" class="${inp()}">
+                ${label("Pays (virgule) *")}<input id="prod-countries" class="${inp()}" placeholder="Japan, France">
+                <div class="col-span-2">${label("Description *")}<textarea id="prod-desc" rows="2" class="${inp()}"></textarea></div>
+                <div class="col-span-2">${label("Images (image/*)")}<input type="file" id="prod-imgs" multiple accept="image/*" class="text-xs text-zinc-400 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:bg-teal-600 file:text-white"></div>
+                <button onclick="createProduct()" class="${btn('bg-teal-600 text-white','col-span-2 w-full')}">Créer</button>
+            </div>
+        </div>
+        <div class="${card()}">
+            <div class="font-semibold mb-3">Modifier un produit</div>
+            ${endpoint("PUT","/api/v0/product/updateProduct/{id}")}
+            <div class="grid grid-cols-2 gap-3">
+                ${label("ID Produit *")}<input id="upd-prod-id" type="number" value="1" class="${inp()} col-span-2">
+                ${label("Nom")}<input id="upd-prod-name" class="${inp()}">
+                ${label("Catégorie")}<input id="upd-prod-cat" class="${inp()}">
+                ${label("Prix achat")}<input id="upd-prod-up" type="number" step="0.01" class="${inp()}">
+                ${label("Prix vente")}<input id="upd-prod-sp" type="number" step="0.01" class="${inp()}">
+                ${label("Quantité")}<input id="upd-prod-qty" type="number" class="${inp()}">
+                ${label("Pays (virgule)")}<input id="upd-prod-countries" class="${inp()}">
+                <div class="col-span-2">${label("Description")}<textarea id="upd-prod-desc" rows="2" class="${inp()}"></textarea></div>
+                <div class="col-span-2">${label("Nouvelles images")}<input type="file" id="upd-prod-imgs" multiple accept="image/*" class="text-xs text-zinc-400 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:bg-amber-500 file:text-white"></div>
+                <button onclick="updateProduct()" class="${btn('bg-amber-500 text-white','col-span-2 w-full')}">Mettre à jour</button>
+            </div>
+        </div>
+        <div class="${card('grid grid-cols-2 gap-4')}">
+            <div>
+                ${endpoint("GET","/api/v0/product/all")}
+                <button onclick="listAllProductsAdmin()" class="${btn('bg-zinc-700 text-white','w-full')}">Tous les produits</button>
+            </div>
+            <div>
+                ${endpoint("DELETE","/api/v0/product/{id}")}
+                ${label("ID à supprimer")}<input id="del-prod-id" type="number" class="${inp('mb-2')}">
+                <button onclick="deleteProduct()" class="${btn('bg-rose-700 text-white','w-full')}"><i class="fa-solid fa-trash mr-1"></i>Supprimer</button>
+            </div>
+        </div>
+    </div>`,
+
+    // 6 — Catégories & Pays
+    () => `<div class="max-w-3xl mx-auto grid grid-cols-2 gap-4">
+        <div class="${card('space-y-3')}">
+            <div class="font-semibold">Catégories</div>
+            ${endpoint("POST","/api/v0/categories/createCategory")}
+            ${label("Nom *")}<input id="cat-name" class="${inp()}" placeholder="Bags">
+            ${label("Description")}<textarea id="cat-desc" rows="2" class="${inp('mb-2')}"></textarea>
+            <button onclick="createCategory()" class="${btn('bg-violet-600 text-white','w-full')}">Créer catégorie</button>
+            <hr class="border-zinc-800">
+            ${endpoint("GET","/api/v0/categories/getAllCategories")}
+            <button onclick="getAllCategories()" class="${btn('bg-zinc-700 text-white','w-full')}">Lister</button>
+            <hr class="border-zinc-800">
+            ${endpoint("GET","/api/v0/categories/{id}")}
+            ${label("ID")}<input id="cat-id" type="number" value="1" class="${inp('mb-2')}">
+            <button onclick="getCategoryById()" class="${btn('bg-zinc-700 text-white','w-full')}">Par ID</button>
+        </div>
+        <div class="${card('space-y-3')}">
+            <div class="font-semibold">Pays</div>
+            ${endpoint("POST","/api/v0/country/newCountry")}
+            ${label("Nom *")}<input id="ctr-name" class="${inp()}" placeholder="Japan">
+            ${label("Code ISO-2 *")}<input id="ctr-code" class="${inp('mb-2')}" placeholder="JP" maxlength="2">
+            <button onclick="createCountry()" class="${btn('bg-sky-600 text-white','w-full')}">Créer pays</button>
+            <hr class="border-zinc-800">
+            ${endpoint("GET","/api/v0/country/getAllCountries")}
+            <button onclick="getAllCountries()" class="${btn('bg-zinc-700 text-white','w-full')}">Lister</button>
+            <hr class="border-zinc-800">
+            ${endpoint("DELETE","/api/v0/country/deleteCountry?idCountry=")}
+            <p class="text-xs text-amber-400">⚠ Query param, pas path segment</p>
+            ${label("ID")}<input id="ctr-del-id" type="number" class="${inp('mb-2')}">
+            <button onclick="deleteCountry()" class="${btn('bg-rose-700 text-white','w-full')}">Supprimer</button>
+        </div>
+    </div>`,
+
+    // 7 — Achats
+    () => `<div class="max-w-2xl mx-auto space-y-4">
+        <div class="${card()}">
+            <div class="font-semibold mb-1">Nouvel achat (stock ↑)</div>
+            ${endpoint("POST","/api/v0/achat/new-achat")}
+            <p class="text-xs text-zinc-500 mb-3">Augmente le stock et crée un log d'activité par produit.</p>
+            ${label("Body JSON")}
+            <textarea id="achat-json" rows="8" class="${inp('font-mono text-xs mb-3')}">{
+  "items": [
+    { "product": { "idProd": 1 }, "quantite": 20 },
+    { "product": { "idProd": 2 }, "quantite": 10 }
+  ]
+}</textarea>
+            <button onclick="createAchat()" class="${btn('bg-lime-600 text-white','w-full')}">Enregistrer achat</button>
+        </div>
+        <div class="${card()}">
+            ${endpoint("GET","/api/v0/achat/get-all-achat")}
+            <button onclick="getAllAchats()" class="${btn('bg-zinc-700 text-white','w-full')}">Tous les achats</button>
+        </div>
+    </div>`,
+
+    // 8 — Ventes directes
+    () => `<div class="max-w-2xl mx-auto space-y-4">
+        <div class="${card()}">
+            <div class="font-semibold mb-1">Vente directe admin (stock ↓)</div>
+            ${endpoint("POST","/api/v0/vente/register")}
+            <p class="text-xs text-zinc-500 mb-3">Sans commande client — vente B2B / en boutique. Pour les commandes clients utilisez l'onglet <em>Commandes Admin → Livrer</em>.</p>
+            ${label("Body JSON")}
+            <textarea id="vente-json" rows="8" class="${inp('font-mono text-xs mb-3')}">{
   "items": [
     { "product": { "idProd": 1 }, "quantite": 2, "prixVendu": 20.00 }
   ]
 }</textarea>
-                            <button onclick="createVente()" class="${btn('bg-purple-600')}">Enregistrer la vente</button>
-                        </div>
+            <button onclick="createDirectVente()" class="${btn('bg-purple-600 text-white','w-full')}">Enregistrer vente</button>
+        </div>
+        <div class="${card('grid grid-cols-2 gap-3')}">
+            <div>
+                ${endpoint("GET","/api/v0/vente/all")}
+                <button onclick="getAllVentes()" class="${btn('bg-zinc-700 text-white','w-full')}">Toutes les ventes</button>
+            </div>
+            <div>
+                ${endpoint("GET","/api/v0/vente/{id}")}
+                ${label("ID Vente")}<input id="vente-id" type="number" value="1" class="${inp('mb-2')}">
+                <button onclick="getVenteById()" class="${btn('bg-zinc-700 text-white','w-full')}">Par ID</button>
+            </div>
+            <div class="col-span-2">
+                ${endpoint("GET","/api/v0/vente/search?date=")}
+                ${label("Date (YYYY-MM-DD)")}<input type="date" id="vente-search-date" class="${inp('mb-2')}">
+                <button onclick="searchVenteByDate()" class="${btn('bg-purple-700 text-white','w-full')}">Chercher par date</button>
+            </div>
+        </div>
+    </div>`,
 
-                        <!-- List all -->
-                        <div class="bg-zinc-900 rounded-3xl p-8">
-                            <h3 class="font-medium flex items-center gap-2 mb-2"><i class="fa-solid fa-list text-zinc-400"></i> Toutes les ventes</h3>
-                            <p class="text-xs text-zinc-500 mb-4">GET /api/v0/vente/all</p>
-                            <button onclick="getAllVentes()" class="${btn('bg-zinc-700')}">Voir toutes les ventes</button>
-                        </div>
+    // 9 — Utilisateurs Admin
+    () => `<div class="max-w-4xl mx-auto space-y-4">
+        <div class="${card()}">
+            <div class="font-semibold mb-1 flex items-center gap-2"><i class="fa-solid fa-user-shield text-amber-400"></i> Créer un compte privilégié</div>
+            ${endpoint("POST","/api/admin/create-user")}
+            <p class="text-xs text-amber-400 mb-3">ADMIN uniquement. Le rôle est honnoré ici (contrairement à /auth/register).</p>
+            <div class="grid grid-cols-2 gap-3">
+                ${label("Nom *")}<input id="adm-usr-name" class="${inp()}" placeholder="Bob Admin">
+                ${label("Email *")}<input id="adm-usr-email" type="email" class="${inp()}">
+                ${label("Mot de passe *")}<input id="adm-usr-pass" type="password" class="${inp()}">
+                ${label("Téléphone")}<input id="adm-usr-tel" class="${inp()}">
+                <div class="col-span-2">${label("Rôle")}
+                    <select id="adm-usr-role" class="${inp()}">
+                        <option value="CLIENT">CLIENT</option>
+                        <option value="ADMIN">ADMIN</option>
+                        <option value="OWNER">OWNER</option>
+                        <option value="PARTNER">PARTNER</option>
+                        <option value="GUEST">GUEST</option>
+                    </select>
+                </div>
+                <div class="col-span-2">${label("Photo")}<input type="file" id="adm-usr-img" accept="image/*" class="text-xs text-zinc-400 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:bg-amber-500 file:text-white"></div>
+                <button onclick="adminCreateUser()" class="${btn('bg-amber-500 text-white','col-span-2 w-full')}">Créer utilisateur</button>
+            </div>
+        </div>
+        <div class="${card('grid grid-cols-2 gap-4')}">
+            <div>
+                ${endpoint("GET","/api/admin/get-all-users")}
+                <button onclick="adminGetAllUsers()" class="${btn('bg-zinc-700 text-white','w-full')}">Tous les utilisateurs</button>
+            </div>
+            <div>
+                ${endpoint("GET","/api/admin/users/{role}")}
+                <select id="filter-user-role" class="${inp('mb-2')}">
+                    <option value="CLIENT">CLIENT</option>
+                    <option value="ADMIN">ADMIN</option>
+                    <option value="OWNER">OWNER</option>
+                    <option value="PARTNER">PARTNER</option>
+                    <option value="GUEST">GUEST</option>
+                </select>
+                <button onclick="adminGetUsersByRole()" class="${btn('bg-zinc-700 text-white','w-full')}">Filtrer par rôle</button>
+            </div>
+            <div>
+                ${endpoint("GET","/api/admin/users/id/{id}")}
+                ${label("UserID")}<input id="get-user-id" type="number" value="1" class="${inp('mb-2')}">
+                <button onclick="adminGetUserById()" class="${btn('bg-sky-700 text-white','w-full')}">Par ID</button>
+            </div>
+            <div>
+                ${endpoint("DELETE","/api/admin/delete/{id}")}
+                ${label("UserID à supprimer")}<input id="del-user-id" type="number" class="${inp('mb-2')}">
+                <button onclick="adminDeleteUser()" class="${btn('bg-rose-700 text-white','w-full')}"><i class="fa-solid fa-trash mr-1"></i>Supprimer</button>
+            </div>
+            <div class="col-span-2">
+                ${endpoint("PUT","/api/admin/users/{id}/role")}
+                <div class="flex gap-3">
+                    <div class="flex-1">${label("UserID")}<input id="role-change-id" type="number" class="${inp()}"></div>
+                    <div class="flex-1">${label("Nouveau rôle")}
+                        <select id="role-change-val" class="${inp()}">
+                            <option value="CLIENT">CLIENT</option>
+                            <option value="ADMIN">ADMIN</option>
+                            <option value="OWNER">OWNER</option>
+                            <option value="PARTNER">PARTNER</option>
+                            <option value="GUEST">GUEST</option>
+                        </select>
+                    </div>
+                </div>
+                <button onclick="adminChangeRole()" class="${btn('bg-amber-500 text-white','w-full mt-3')}">Changer le rôle</button>
+            </div>
+        </div>
+    </div>`,
 
-                        <!-- Get by ID -->
-                        <div class="bg-zinc-900 rounded-3xl p-8 space-y-4">
-                            <h3 class="font-medium flex items-center gap-2"><i class="fa-solid fa-hashtag text-sky-400"></i> Vente par ID</h3>
-                            <p class="text-xs text-zinc-500">GET /api/v0/vente/{id}</p>
-                            <input id="get-vente-id" type="number" value="1" placeholder="id de la vente" class="${inp}">
-                            <button onclick="getVenteById()" class="${btn('bg-sky-700')}">Chercher</button>
-                        </div>
+    // 10 — Fichiers
+    () => `<div class="max-w-4xl mx-auto space-y-4">
+        <div class="${card('grid grid-cols-2 gap-4')}">
+            <div>
+                ${endpoint("POST","/file/upload")}
+                <input type="file" id="single-file" accept="image/*" class="text-xs text-zinc-400 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:bg-amber-500 file:text-white mb-2">
+                ${label("productId (opt)")}<input id="single-pid" class="${inp('mb-2')}">
+                <button onclick="uploadSingle()" class="${btn('bg-amber-500 text-white','w-full')}">Upload simple</button>
+            </div>
+            <div>
+                ${endpoint("POST","/file/upload/batch")}
+                <input type="file" id="batch-files" multiple accept="image/*" class="text-xs text-zinc-400 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:bg-amber-500 file:text-white mb-2">
+                ${label("productId (opt)")}<input id="batch-pid" class="${inp('mb-2')}">
+                <button onclick="uploadBatch()" class="${btn('bg-amber-500 text-white','w-full')}">Upload multiple</button>
+            </div>
+        </div>
+        <div class="${card()}">
+            ${label("fileId (hex ObjectId)")}
+            <input id="file-id" class="${inp('mb-3')}" placeholder="6500f7b8a4440f1aaad12f65">
+            <div class="flex gap-2">
+                <button onclick="viewFile()"    class="${btn('bg-emerald-600 text-white','flex-1')}"><i class="fa-solid fa-eye mr-1"></i>Voir</button>
+                <button onclick="getFileMeta()" class="${btn('bg-sky-700 text-white','flex-1')}"><i class="fa-solid fa-info mr-1"></i>Métadonnées</button>
+                <button onclick="deleteFile()"  class="${btn('bg-rose-700 text-white','flex-1')}"><i class="fa-solid fa-trash mr-1"></i>Supprimer</button>
+            </div>
+        </div>
+        <div class="${card()}">
+            ${endpoint("GET","/file/product/{productId}")}
+            ${label("productId")}<input id="files-prod-id" type="number" value="1" class="${inp('mb-3')}">
+            <button onclick="getFilesByProduct()" class="${btn('bg-violet-600 text-white','w-full')}">Fichiers du produit</button>
+        </div>
+    </div>`,
 
-                        <!-- Search by date -->
-                        <div class="bg-zinc-900 rounded-3xl p-8 space-y-4">
-                            <h3 class="font-medium flex items-center gap-2"><i class="fa-solid fa-calendar-day text-amber-400"></i> Ventes par date</h3>
-                            <p class="text-xs text-zinc-500">GET /api/v0/vente/search?date=YYYY-MM-DD</p>
-                            <input id="search-vente-date" type="date" class="${inp}">
-                            <button onclick="searchVenteByDate()" class="${btn('bg-amber-500')}">Rechercher</button>
-                        </div>
-                    </div>`;
-                }
-            ];
+    // 11 — Activité Produits
+    () => `<div class="max-w-3xl mx-auto space-y-4">
+        <div class="${card()}">
+            <div class="font-semibold mb-1 flex items-center gap-2"><i class="fa-solid fa-timeline text-rose-400"></i> Audit trail par produit</div>
+            ${endpoint("GET","/api/v0/product/{id}/activity")}
+            <p class="text-xs text-zinc-500 mb-3">Retourne toutes les actions : CREATED, UPDATED, DELETED, ACHAT, COMMANDE_PLACED, CONFIRMED, DELIVERED, CANCELLED.</p>
+            ${label("ID Produit")}<input id="act-prod-id" type="number" value="1" class="${inp('mb-3')}">
+            <button onclick="getProductActivity()" class="${btn('bg-rose-600 text-white','w-full')}">Voir l'activité</button>
+        </div>
+        <div class="${card()}">
+            <div class="font-semibold mb-1 flex items-center gap-2"><i class="fa-solid fa-user-clock text-violet-400"></i> Activité par utilisateur</div>
+            ${endpoint("GET","/api/v0/product/activity/user?email=")}
+            <p class="text-xs text-zinc-500 mb-3">Toutes les actions effectuées par un utilisateur sur n'importe quel produit.</p>
+            ${label("Email utilisateur")}<input id="act-user-email" type="email" class="${inp('mb-3')}" placeholder="admin@example.com">
+            <button onclick="getActivityByUser()" class="${btn('bg-violet-600 text-white','w-full')}">Voir l'activité</button>
+        </div>
+    </div>`
+];
 
-            content.innerHTML = tabs[activeTab]();
-
-            // Set today's date on the vente search input after render
-            if (activeTab === 7) {
-                const di = document.getElementById("search-vente-date");
-                if (di) di.value = new Date().toISOString().slice(0, 10);
-            }
-        }
-
-        // ==================== HANDLERS ====================
-
-        // --- Auth ---
-        async function handleRegister() {
-            const fd = new FormData();
-            fd.append("name", document.getElementById("reg-name").value);
-            fd.append("email", document.getElementById("reg-email").value);
-            fd.append("password", document.getElementById("reg-password").value);
-            const tel = document.getElementById("reg-tel").value;
-            const role = document.getElementById("reg-role").value;
-            if (tel) fd.append("telephone", tel);
-            if (role) fd.append("role", role);
-            const img = document.getElementById("reg-image").files[0];
-            if (img) fd.append("profileImg", img);
-            const { data } = await apiCall("/auth/register", { method: "POST", body: fd });
-            if (data && data.userId) currentUser = data;
-        }
-
-        async function handleLogin() {
-            const email = document.getElementById("login-email").value;
-            const password = document.getElementById("login-password").value;
-            const { data } = await apiCall("/auth/login", {
-                method: "POST",
-                body: JSON.stringify({ email, password })
-            });
-            if (data && data.token) {
-                saveToken(data.token, data.refreshToken);
-                currentUser = data;
-            }
-        }
-
-        async function handleRefresh() {
-            const manual = document.getElementById("refresh-token-input") &&
-                           document.getElementById("refresh-token-input").value.trim();
-            const token = manual || currentRefreshToken;
-            if (!token) return showResponse({ error: "Aucun refreshToken disponible" }, 400, 0, "POST");
-            const { data } = await apiCall("/auth/refresh", {
-                method: "POST",
-                body: JSON.stringify({ token })
-            });
-            if (data && data.token) saveToken(data.token, data.refreshToken || currentRefreshToken);
-        }
-
-        // --- Users ---
-        async function getProfile() {
-            await apiCall("/api/adminuser/get-profile");
-        }
-
-        async function getAllUsers() {
-            await apiCall("/api/admin/get-all-users");
-        }
-
-        async function getUserById() {
-            const id = document.getElementById("user-id-input").value;
-            await apiCall(`/api/user/get-users/${id}`);
-        }
-
-        async function getUsersByRole() {
-            const role = document.getElementById("filter-role").value;
-            await apiCall(`/api/admin/users/${role}`);
-        }
-
-        async function deleteUser() {
-            const id = document.getElementById("delete-user-id").value;
-            if (!id) return showResponse({ error: "Entrez un userId" }, 400, 0, "DELETE");
-            await apiCall(`/api/admin/delete/${id}`, { method: "DELETE" });
-        }
-
-        async function updateProfile() {
-            const fd = new FormData();
-            const fields = [
-                ["upd-name", "name"],
-                ["upd-email", "email"],
-                ["upd-password", "password"],
-                ["upd-tel", "telephone"]
-            ];
-            fields.forEach(([elId, key]) => {
-                const v = document.getElementById(elId).value.trim();
-                if (v) fd.append(key, v);
-            });
-            const role = document.getElementById("upd-role").value;
-            if (role) fd.append("role", role);
-            const file = document.getElementById("upd-file").files[0];
-            if (file) fd.append("file", file);
-            await apiCall("/api/user/update", { method: "PUT", body: fd });
-        }
-
-        // --- Products ---
-        async function createProduct() {
-            const fd = new FormData();
-            fd.append("ProdName", document.getElementById("prod-name").value);
-            fd.append("UnitPrice", document.getElementById("prod-unitprice").value);
-            fd.append("SoldPrice", document.getElementById("prod-soldprice").value);
-            fd.append("ProdQty", document.getElementById("prod-qty").value);
-            fd.append("prodDescription", document.getElementById("prod-desc").value);
-            fd.append("category", document.getElementById("prod-category").value);
-            document.getElementById("prod-country").value
-                .split(",").map(c => c.trim()).filter(Boolean)
-                .forEach(c => fd.append("Country", c));
-            for (const f of document.getElementById("prod-images").files) fd.append("ProdUrl", f);
-            await apiCall("/api/v0/product/newProduct", { method: "POST", body: fd });
-        }
-
-        async function updateProduct() {
-            const id = document.getElementById("upd-prod-id").value;
-            const fd = new FormData();
-            const optFields = [
-                ["upd-prod-name", "ProdName"],
-                ["upd-prod-unitprice", "UnitPrice"],
-                ["upd-prod-soldprice", "SoldPrice"],
-                ["upd-prod-qty", "ProdQty"],
-                ["upd-prod-category", "category"],
-                ["upd-prod-desc", "prodDescription"]
-            ];
-            optFields.forEach(([elId, key]) => {
-                const v = document.getElementById(elId).value.trim();
-                if (v) fd.append(key, v);
-            });
-            const countries = document.getElementById("upd-prod-country").value;
-            if (countries.trim()) {
-                countries.split(",").map(c => c.trim()).filter(Boolean)
-                    .forEach(c => fd.append("Country", c));
-            }
-            for (const f of document.getElementById("upd-prod-images").files) fd.append("ProdUrl", f);
-            await apiCall(`/api/v0/product/updateProduct/${id}`, { method: "PUT", body: fd });
-        }
-
-        async function getProductById() {
-            const id = document.getElementById("get-prod-id").value;
-            await apiCall(`/api/v0/product/${id}`);
-        }
-
-        async function listAllProducts() {
-            await apiCall("/api/v0/product/all");
-        }
-
-        async function searchProductByName() {
-            const name = document.getElementById("search-prod-name").value.trim();
-            if (!name) return;
-            await apiCall(`/api/v0/product/searchByName?prodName=${encodeURIComponent(name)}`);
-        }
-
-        async function searchProductByCountry() {
-            const country = document.getElementById("search-prod-country").value.trim();
-            if (!country) return;
-            await apiCall(`/api/v0/product/searchByCountry?country=${encodeURIComponent(country)}`);
-        }
-
-        async function greetings() {
-            await apiCall("/api/v0/product/greetings");
-        }
-
-        // --- Categories ---
-        async function createCategory() {
-            await apiCall("/api/v0/categories/createCategory", {
-                method: "POST",
-                body: JSON.stringify({
-                    catProdName: document.getElementById("cat-name").value,
-                    catProdDes: document.getElementById("cat-desc").value
-                })
-            });
-        }
-
-        async function getAllCategories() {
-            await apiCall("/api/v0/categories/getAllCategories");
-        }
-
-        async function getCategoryById() {
-            const id = document.getElementById("cat-id").value;
-            await apiCall(`/api/v0/categories/${id}`);
-        }
-
-        // --- Countries ---
-        async function createCountry() {
-            await apiCall("/api/v0/country/newCountry", {
-                method: "POST",
-                body: JSON.stringify({
-                    countryName: document.getElementById("country-name").value,
-                    countryCode: document.getElementById("country-code").value
-                })
-            });
-        }
-
-        async function getAllCountries() {
-            await apiCall("/api/v0/country/getAllCountries");
-        }
-
-        async function deleteCountry() {
-            const id = document.getElementById("delete-country-id").value;
-            await apiCall(`/api/v0/country/deleteCountry?idCountry=${id}`, { method: "DELETE" });
-        }
-
-        // --- Files ---
-        async function uploadSingleFile() {
-            const file = document.getElementById("single-file").files[0];
-            if (!file) return showResponse({ error: "Choisissez une image" }, 400, 0, "POST");
-            const fd = new FormData();
-            fd.append("file", file);
-            const pid = document.getElementById("file-product-id").value;
-            if (pid) fd.append("productId", pid);
-            await apiCall("/file/upload", { method: "POST", body: fd });
-        }
-
-        async function uploadBatchFiles() {
-            const files = document.getElementById("batch-files").files;
-            if (!files.length) return showResponse({ error: "Choisissez au moins une image" }, 400, 0, "POST");
-            const fd = new FormData();
-            for (const f of files) fd.append("files", f);
-            const pid = document.getElementById("batch-product-id").value;
-            if (pid) fd.append("productId", pid);
-            await apiCall("/file/upload/batch", { method: "POST", body: fd });
-        }
-
-        async function viewFile() {
-            const id = document.getElementById("view-file-id").value.trim();
-            if (!id) return;
-            window.open(`${BASE_URL}/file/${id}`, "_blank");
-            showResponse({ message: `Image ouverte dans un nouvel onglet`, url: `${BASE_URL}/file/${id}` }, 200, 0, "GET");
-        }
-
-        async function getFileMetadata() {
-            const id = document.getElementById("view-file-id").value.trim();
-            if (!id) return;
-            await apiCall(`/file/metadata/${id}`);
-        }
-
-        async function deleteFile() {
-            const id = document.getElementById("view-file-id").value.trim();
-            if (!id) return showResponse({ error: "Entrez un fileId" }, 400, 0, "DELETE");
-            await apiCall(`/file/${id}`, { method: "DELETE" });
-        }
-
-        async function getFilesByProduct() {
-            const id = document.getElementById("files-product-id").value;
-            await apiCall(`/file/product/${id}`);
-        }
-
-        // --- Achats ---
-        async function createAchat() {
-            const json = document.getElementById("achat-json").value.trim();
-            await apiCall("/api/v0/achat/new-achat", { method: "POST", body: json });
-        }
-
-        async function getAllAchats() {
-            await apiCall("/api/v0/achat/get-all-achat");
-        }
-
-        // --- Ventes ---
-        async function createVente() {
-            const json = document.getElementById("vente-json").value.trim();
-            await apiCall("/api/v0/vente/register", { method: "POST", body: json });
-        }
-
-        async function getAllVentes() {
-            await apiCall("/api/v0/vente/all");
-        }
-
-        async function getVenteById() {
-            const id = document.getElementById("get-vente-id").value;
-            await apiCall(`/api/v0/vente/${id}`);
-        }
-
-        async function searchVenteByDate() {
-            const date = document.getElementById("search-vente-date").value;
-            if (!date) return showResponse({ error: "Sélectionnez une date" }, 400, 0, "GET");
-            await apiCall(`/api/v0/vente/search?date=${date}`);
-        }
-
-        // ==================== INIT ====================
-        function init() {
-            tailwind.config = { content: [], theme: { extend: {} } };
-            updateTokenUI();
-            renderCurrentTab();
-            console.log("%c✅ Nipponhub API Tester v2.0 chargé !", "color:#e11d48; font-size:13px");
-            console.log("Base URL :", BASE_URL);
-        }
-
-        window.onload = init;
-    </script>
+// ══════════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════════
+window.onload = () => {
+    tailwind.config = { content: [], theme: { extend: {} } };
+    updateTokenUI();
+    go(0);
+    console.log("%c✅ Nipponhub API Tester v3.0","color:#e11d48;font-size:13px");
+};
+</script>
 </body>
 </html>

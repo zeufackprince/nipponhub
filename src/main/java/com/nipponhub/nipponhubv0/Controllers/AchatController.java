@@ -3,8 +3,7 @@ package com.nipponhub.nipponhubv0.Controllers;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import com.nipponhub.nipponhubv0.DTO.AchatDto;
@@ -28,14 +27,12 @@ public class AchatController {
 
         /** POST /api/v0/achat/new-achat */
     @PostMapping("/new-achat")
-    public ResponseEntity<AchatDto> newAchat(
-            @RequestBody Achats request,
-            @AuthenticationPrincipal UserDetails user) {
-
-        String role = user.getAuthorities().iterator().next().getAuthority()
-                        .replace("ROLE_", "");
+    public ResponseEntity<AchatDto> newAchat(@RequestBody Achats request) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        String role = SecurityContextHolder.getContext().getAuthentication().getAuthorities()
+                .iterator().next().getAuthority().replace("ROLE_", "");
         return ResponseEntity.status(201)
-                .body(achatService.createAchat(request, user.getUsername(), role));
+                .body(achatService.createAchat(request, username, role));
     }
 
     /**

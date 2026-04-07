@@ -11,9 +11,12 @@ import java.util.function.Function;
 
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Value;
+
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import jakarta.annotation.PostConstruct;
 
 /**
  * The type Jwt utils.
@@ -21,16 +24,39 @@ import io.jsonwebtoken.Jwts;
 @Component
 public class JWTUtils {
 
-    private SecretKey Key;
-    private  static  final long EXPIRATION_TIME = 86400000;  //24 hours
+    // private SecretKey Key;
+    // private  static  final long EXPIRATION_TIME = 86400000;  //24 hours
 
-    /**
-     * Instantiates a new Jwt utils.
-     */
-    public JWTUtils(){
-        String secreteString = "843567893696976453275974432697R634976R738467TR678T34865R6834R8763T478378637664538745673865783678548735687R3";
-        byte[] keyBytes = Base64.getDecoder().decode(secreteString.getBytes(StandardCharsets.UTF_8));
-        this.Key = new SecretKeySpec(keyBytes, "HmacSHA256");
+    // /**
+    //  * Instantiates a new Jwt utils.
+    //  */
+    // public JWTUtils(){
+    //     String secreteString = "843567893696976453275974432697R634976R738467TR678T34865R6834R8763T478378637664538745673865783678548735687R3";
+    //     byte[] keyBytes = Base64.getDecoder().decode(secreteString.getBytes(StandardCharsets.UTF_8));
+    //     this.Key = new SecretKeySpec(keyBytes, "HmacSHA256");
+    // }
+
+    @Value("${app.jwt.secret}")
+    private String secretString;
+    
+    @Value("${app.jwt.expiration}")
+    private long expiration;
+    
+    private SecretKey Key;
+    
+    @PostConstruct
+    public void initKey() {
+        try {
+            if (secretString == null || secretString.isEmpty()) {
+                throw new IllegalArgumentException("JWT_SECRET is not configured. Set app.jwt.secret in application.properties or JWT_SECRET environment variable");
+            }
+            byte[] keyBytes = Base64.getDecoder().decode(secretString.getBytes(StandardCharsets.UTF_8));
+            this.Key = new SecretKeySpec(keyBytes, "HmacSHA256");
+            
+            System.out.println("✓ JWT Key initialized successfully");
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Failed to initialize JWT secret. Ensure JWT_SECRET is valid Base64 encoded. Error: " + e.getMessage(), e);
+        }
     }
 
     /**
@@ -43,7 +69,7 @@ public class JWTUtils {
         return Jwts.builder()
                 .subject(userDetails.getUsername())
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+                .expiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(Key)
                 .compact();
     }
@@ -60,7 +86,7 @@ public class JWTUtils {
                 .claims(claims)
                 .subject(userDetails.getUsername())
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+                .expiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(Key)
                 .compact();
     }

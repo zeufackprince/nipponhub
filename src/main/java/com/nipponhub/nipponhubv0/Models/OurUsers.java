@@ -63,8 +63,8 @@ public class OurUsers implements UserDetails {
     @Column(name = "images")
     public String images;
 
-    @Enumerated(value = EnumType.STRING)
-    @Column(nullable = true)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", length = 20, nullable = false)
     private UserRole role;
 
     @OneToMany(mappedBy = "ouruser" , cascade = CascadeType.ALL)

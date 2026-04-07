@@ -1,5 +1,6 @@
 package com.nipponhub.nipponhubv0.Models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -33,6 +34,7 @@ public class ProductActivity {
  
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
+    @JsonIgnore  // ✅ Prevent infinite loop during JSON serialization
     private Product product;
 
     @Column(name = "action_type", nullable = false, length = 30)
@@ -54,4 +56,21 @@ public class ProductActivity {
  
     @PrePersist
     protected void onCreate() { timestamp = LocalDateTime.now(); }
+    
+    /**
+     * Transient field: populated after entity load to provide product ID in JSON response
+     * without including the entire Product entity (which would cause circular reference).
+     */
+    @Transient
+    private Long productId;
+    
+    /**
+     * Post-load hook: copy the product ID so JSON response includes it without the full product.
+     */
+    @PostLoad
+    public void populateProductId() {
+        if (this.product != null) {
+            this.productId = this.product.getIdProd();
+        }
+    }
 }

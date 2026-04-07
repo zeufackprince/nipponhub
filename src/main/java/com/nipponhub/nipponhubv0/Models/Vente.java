@@ -1,6 +1,7 @@
 package com.nipponhub.nipponhubv0.Models;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.*;
@@ -22,8 +23,8 @@ public class Vente {
     @Column(name = "dateVente", nullable = false)
     private LocalDate date;
 
-    @OneToMany(mappedBy = "vente", cascade = CascadeType.ALL)
-    private List<VenteItem> items;
+    @OneToMany(mappedBy = "vente", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+    private List<VenteItem> items = new ArrayList<>();  // ✅ Initialize to empty list to avoid null
 
      /**
      * The client whose order triggered this sale.

@@ -29,3 +29,27 @@ public class CorsConfig {
         };
     }
 }
+
+// For Production
+
+// @Configuration
+// public class CorsConfig {
+
+//     @Value("${app.cors.allowed-origins:http://localhost:3000}")
+//     private String allowedOrigins;
+
+//     @Bean
+//     public WebMvcConfigurer webMvcConfigurer() {
+//         return new WebMvcConfigurer() {
+//             @Override
+//             public void addCorsMappings(CorsRegistry registry) {
+//                 registry.addMapping("/**")
+//                         .allowedOrigins(allowedOrigins.split(","))
+//                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+//                         .allowedHeaders("*")
+//                         .allowCredentials(true)
+//                         .maxAge(3600);
+//             }
+//         };
+//     }
+// }

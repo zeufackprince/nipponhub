@@ -136,17 +136,17 @@ public class UserManagementController {
         return ResponseEntity.ok(usersManagementService.getUsersById(userId));
     }
 
-    // /**
-    //  * PUT /api/admin/users/{userId}/role
-    //  * ADMIN-only: change the role of any user.
-    //  */
-    // @PutMapping("/api/admin/users/{userId}/role")
-    // @PreAuthorize("hasRole('ADMIN')")
-    // public ResponseEntity<ReqRes> changeUserRole(
-    //         @PathVariable Long userId,
-    //         @RequestParam String role) {
-    //     return ResponseEntity.ok(usersManagementService.changeRole(userId, role));
-    // }    
+    /**
+     * PUT /api/admin/users/{userId}/role
+     * ADMIN-only: change the role of any user.
+     */
+    @PutMapping("/api/admin/users/{userId}/role")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ReqRes> changeUserRole(
+            @PathVariable Long userId,
+            @RequestParam String role) {
+        return ResponseEntity.ok(usersManagementService.changeRole(userId, role));
+    }    
 
 
     /**
@@ -167,8 +167,7 @@ public class UserManagementController {
         @RequestParam(required = false) String     email,
         @RequestParam(required = false) String     password,
         @RequestParam(required = false) String     telephone,
-        @RequestParam(required = false) MultipartFile file,
-        @AuthenticationPrincipal UserDetails user
+        @RequestParam(required = false) MultipartFile file
     ) throws IOException {
 
         // ── Resolve the caller's identity from the security context ────────────
@@ -177,13 +176,12 @@ public class UserManagementController {
             throw new RuntimeException("User is not authenticated");
         }
 
-        OurUsers userdb = userRepository.findByName(user.getUsername()).get();
-
-        // Look up the user by email (JWT subject) to get their MySQL id
-        Long userId = userRepository
+        // Look up the user by email (JWT subject) to get their MySQL id and role
+        OurUsers userdb = userRepository
             .findByEmail(auth.getName())
-            .orElseThrow(() -> new RuntimeException("Authenticated user not found in database"))
-            .getUserid();
+            .orElseThrow(() -> new RuntimeException("Authenticated user not found in database"));
+        
+        Long userId = userdb.getUserid();
 
         ReqRes reqres = new ReqRes(name, email, telephone, password, userdb.getRole());
         return ResponseEntity.ok(usersManagementService.updateUser(userId, reqres, file));
@@ -196,6 +194,7 @@ public class UserManagementController {
      * Accessible by any authenticated user (both ADMIN and USER roles).
      */
     @GetMapping("/api/adminuser/get-profile")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ReqRes> getMyProfile() {
         Authentication auth  = SecurityContextHolder.getContext().getAuthentication();
         ReqRes response      = usersManagementService.getMyInfo(auth.getName());

@@ -3,6 +3,9 @@ package com.nipponhub.nipponhubv0.DTO;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.nipponhub.nipponhubv0.Models.Enum.UserRole;
+
+import jakarta.validation.constraints.*;
+
 import com.nipponhub.nipponhubv0.Models.OurUsers;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -45,10 +48,20 @@ public class ReqRes {
 
     // ── User fields ──────────────────────────────────────────────────────────────
     private Long     userId;
-    private String   name;
-    private String   email;
-    private String   password;      // inbound only — never set in responses
-    private String   telephone;
+   @NotBlank(message = "Name is required")
+    @Size(min = 2, max = 100)
+    private String name;
+    
+    @NotBlank(message = "Email is required")
+    @Email(message = "Email must be valid")
+    private String email;
+    
+    @NotBlank(message = "Password is required")
+    @Size(min = 12, message = "Password must be at least 12 characters")
+    private String password;
+    
+    @Pattern(regexp = "^\\+?[1-9]\\d{1,14}$", message = "Invalid phone number")
+    private String telephone;
     private UserRole role;
 
     // ── Profile image ─────────────────────────────────────────────────────────────

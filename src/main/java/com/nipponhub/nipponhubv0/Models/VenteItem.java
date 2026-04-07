@@ -2,13 +2,8 @@ package com.nipponhub.nipponhubv0.Models;
 
 import java.math.BigDecimal;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Table
+@Table(name = "vente_item")
 public class VenteItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,12 +27,17 @@ public class VenteItem {
 
     private BigDecimal gain;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "vente_id", nullable = false)
+    @JsonIgnore  // ✅ Prevent infinite recursion when serializing
     private Vente vente;
-
-    // getters et setters
+    
+    // ✅ Transient field for incoming JSON deserialization (not persisted)
+    @Transient
+    private Long productId;
 }
 

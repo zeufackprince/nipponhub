@@ -79,7 +79,7 @@ public class ProductService {
                 throw new RuntimeException("No countries found for: " + countryNames);
             }
 
-            OurUsers creator = this.userRepository.findByName(username)
+            OurUsers creator = this.userRepository.findByEmail(username)
                 .orElseThrow(() -> new RuntimeException("User not found: " + username));
 
             Product prod = new Product();
@@ -154,7 +154,7 @@ public class ProductService {
                 prod.setCountries(countryRepository.findByCountryNameIn(countryNames));
             }
 
-            OurUsers creator = this.userRepository.findByName(username)
+            OurUsers creator = this.userRepository.findByEmail(username)
                 .orElseThrow(() -> new RuntimeException("User not found: " + username));
 
                 prod.setOuruser(creator);

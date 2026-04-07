@@ -28,6 +28,14 @@ public class FileStorageService {
     private final GridFsTemplate gridFsTemplate;
     private final GridFsOperations gridFsOperations;
     private final FileRepository fileRepository;
+    private static final long MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+    private static final String[] ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".gif"};
+    private static final byte[][] MAGIC_BYTES = {
+        {(byte) 0xFF, (byte) 0xD8, (byte) 0xFF},  // JPEG
+        {(byte) 0x89, 0x50, 0x4E, 0x47},          // PNG
+        {0x47, 0x49, 0x46},                       // GIF
+        {0x52, 0x49, 0x46, 0x46}                  // WEBP
+    };
 
     // ─── UPLOAD ─────────────────────────────────────────────────────────────────
 
@@ -50,49 +58,78 @@ public class FileStorageService {
      * @param productId optional MySQL product id to associate with this file
      * @return the GridFS ObjectId as a String
      */
-    public String uploadFile(MultipartFile file, Long productId) throws IOException {
+    
 
-        // ── Validate ──────────────────────────────────────────────────────────
-        String contentType = file.getContentType();
-        if (contentType == null || !contentType.startsWith("image/")) {
-            throw new IllegalArgumentException(
-                "Only image files are allowed. Received: " + contentType
-            );
-        }
-
-        // ── Build GridFS metadata ─────────────────────────────────────────────
-        DBObject metadata = new BasicDBObject();
-        metadata.put("originalName", file.getOriginalFilename());
-        metadata.put("contentType", contentType);
-        metadata.put("size", file.getSize());
-        if (productId != null) {
-            metadata.put("productId", productId);
-        }
-
-        // ── Store in GridFS ───────────────────────────────────────────────────
-        ObjectId fileId = gridFsTemplate.store(
-            file.getInputStream(),
-            file.getOriginalFilename(),
-            contentType,
-            metadata
+public String uploadFile(MultipartFile file, Long productId) throws IOException {
+    // ─── VALIDATE FILE SIZE ──────────────────────────────────────────────
+    if (file.getSize() > MAX_FILE_SIZE) {
+        throw new IllegalArgumentException(
+            "File size (" + file.getSize() + " bytes) exceeds limit of " + MAX_FILE_SIZE
         );
-
-        // ── Persist metadata document ─────────────────────────────────────────
-        FileDocument doc = FileDocument.builder()
-            .gridFsId(fileId.toString())
-            .originalName(file.getOriginalFilename())
-            .contentType(contentType)
-            .size(file.getSize())
-            .productId(productId)
-            .build();
-
-        fileRepository.save(doc);
-
-        log.info("File uploaded — gridFsId: {}, name: {}, productId: {}",
-            fileId, file.getOriginalFilename(), productId);
-
-        return fileId.toString();
     }
+    
+    // ─── VALIDATE FILE EXTENSION ─────────────────────────────────────────
+    String filename = file.getOriginalFilename().toLowerCase();
+    boolean validExtension = false;
+    for (String ext : ALLOWED_EXTENSIONS) {
+        if (filename.endsWith(ext)) {
+            validExtension = true;
+            break;
+        }
+    }
+    if (!validExtension) {
+        throw new IllegalArgumentException(
+            "File type not allowed. Accepted: " + String.join(", ", ALLOWED_EXTENSIONS)
+        );
+    }
+    
+    // ─── VALIDATE MAGIC BYTES ────────────────────────────────────────────
+    byte[] fileHeader = new byte[4];
+    try (InputStream is = file.getInputStream()) {
+        is.read(fileHeader);
+    }
+    
+    boolean validMagic = false;
+    for (byte[] magic : MAGIC_BYTES) {
+        if (startsWith(fileHeader, magic)) {
+            validMagic = true;
+            break;
+        }
+    }
+    if (!validMagic) {
+        throw new IllegalArgumentException("File is corrupted or not a valid image");
+    }
+    
+    // ─── SANITIZE FILENAME ───────────────────────────────────────────────
+    String sanitized = filename.replaceAll("[^a-zA-Z0-9._-]", "_");
+    String uniqueName = System.currentTimeMillis() + "_" + sanitized;
+    
+    // ─── STORE FILE ──────────────────────────────────────────────────────
+    DBObject metadata = new BasicDBObject();
+    metadata.put("originalName", sanitized);
+    metadata.put("contentType", file.getContentType());
+    metadata.put("size", file.getSize());
+    if (productId != null) {
+        metadata.put("productId", productId);
+    }
+    
+    ObjectId fileId = gridFsTemplate.store(
+        file.getInputStream(),
+        uniqueName,
+        file.getContentType(),
+        metadata
+    );
+    
+    return fileId.toHexString();
+}
+
+private boolean startsWith(byte[] data, byte[] prefix) {
+    if (data.length < prefix.length) return false;
+    for (int i = 0; i < prefix.length; i++) {
+        if (data[i] != prefix[i]) return false;
+    }
+    return true;
+}
 
     /**
      * Upload multiple images at once (no product association).

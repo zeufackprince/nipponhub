@@ -8,8 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -46,13 +45,13 @@ public class ProductController {
         @RequestParam(required = false, name = "ProdUrl")     List<MultipartFile> ProdUrl,
         @RequestParam(required = false, name = "Country")     List<String> Country,
         @RequestParam(required = false, name = "category")    String category,
-        @RequestParam(required = false, name = "prodDescription")    String prodDescription,
-        @AuthenticationPrincipal UserDetails user
+        @RequestParam(required = false, name = "prodDescription")    String prodDescription
     ) throws IOException {
 
         try {
-            String role = user.getAuthorities().iterator().next().getAuthority()
-                        .replace("ROLE_", "");
+            String username = SecurityContextHolder.getContext().getAuthentication().getName();
+            String role = SecurityContextHolder.getContext().getAuthentication().getAuthorities()
+                        .iterator().next().getAuthority().replace("ROLE_", "");
 
             if (!role.equals("ADMIN") && !role.equals("OWNER")) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
@@ -60,7 +59,7 @@ public class ProductController {
             }
 
             ProductDto result = productServices.createProduct(
-                ProdName, UnitPrice, SoldPrice, ProdQty, ProdUrl, Country, category, prodDescription, user.getUsername()
+                ProdName, UnitPrice, SoldPrice, ProdQty, ProdUrl, Country, category, prodDescription, username
             );
 
             return ResponseEntity.status(HttpStatus.CREATED).body(result);
@@ -91,20 +90,15 @@ public class ProductController {
         @RequestParam(required = false, name = "ProdUrl")     List<MultipartFile> ProdUrl,
         @RequestParam(required = false, name = "Country")     List<String> Country,
         @RequestParam(required = false, name = "category")    String category,
-        @RequestParam(required = false, name = "prodDescription")    String prodDescription,
-        @AuthenticationPrincipal UserDetails user
-
+        @RequestParam(required = false, name = "prodDescription")    String prodDescription
     ) throws IOException {
 
-         String role = user.getAuthorities().iterator().next().getAuthority()
-                        .replace("ROLE_", "");
-
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
 
         ProductDto result = productServices.updateProduct(
-            idProd, ProdName, UnitPrice, SoldPrice, ProdQty, ProdUrl, Country, category, prodDescription, role
+            idProd, ProdName, UnitPrice, SoldPrice, ProdQty, ProdUrl, Country, category, prodDescription, username
         );
 
-        // If service set a message, something went wrong
         if (result.getMessage() != null) {
             return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -176,13 +170,11 @@ public class ProductController {
      */
     @DeleteMapping("/{idProd}")
     @PreAuthorize("hasAnyRole('ADMIN', 'OWNER')")
-    public ResponseEntity<Void> deleteProduct(
-            @PathVariable Long idProd,
-            @AuthenticationPrincipal UserDetails user) {
-
-        String role = user.getAuthorities().iterator().next().getAuthority()
-                        .replace("ROLE_", "");
-        productServices.deleteProduct(idProd, user.getUsername(), role);
+    public ResponseEntity<Void> deleteProduct(@PathVariable Long idProd) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        String role = SecurityContextHolder.getContext().getAuthentication().getAuthorities()
+                        .iterator().next().getAuthority().replace("ROLE_", "");
+        productServices.deleteProduct(idProd, username, role);
         return ResponseEntity.noContent().build();
     }
 
