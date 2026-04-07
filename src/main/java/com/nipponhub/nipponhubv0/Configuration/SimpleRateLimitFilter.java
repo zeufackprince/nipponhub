@@ -1,6 +1,5 @@
 package com.nipponhub.nipponhubv0.Configuration;
 
-import io.jsonwebtoken.io.SerializationException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -52,7 +51,7 @@ public class SimpleRateLimitFilter extends OncePerRequestFilter {
     }
     
     private static class RequestCounter {
-        private static final long serialVersionUID = 1L;
+        // private static final long serialVersionUID = 1L;
         private long firstRequestTime;
         private AtomicInteger count = new AtomicInteger(0);
         
