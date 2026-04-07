@@ -8962,3 +8962,396 @@ Caused by: java.sql.SQLIntegrityConstraintViolationException: Cannot add or upda
 2026-04-07T18:58:55.799+01:00  WARN 13324 --- [nipponhub] [restartedMain] o.s.core.events.SpringDocAppInitializer  : SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
 2026-04-07T19:00:26.312+01:00  INFO 13324 --- [nipponhub] [restartedMain] c.n.nipponhubv0.NipponhubApplication     : Starting NipponhubApplication using Java 21.0.7 with PID 13324 (c:\Users\tamez\Documents\nipponhub\target\classes started by tamez in c:\Users\tamez\Documents\nipponhub)
 2026-04-07T19:00:26.313+01:00  INFO 13324 --- [nipponhub] [restartedMain] c.n.nipponhubv0.NipponhubApplication     : No active profile set, falling back to 1 default profile: "default"
+2026-04-07T19:00:28.662+01:00  WARN 13324 --- [nipponhub] [restartedMain] o.h.t.s.i.ExceptionHandlerLoggedImpl     : GenerationTarget encountered exception accepting command : Error executing DDL "alter table vente_item add constraint FK55xifxv49ka3iukskapu95tbg foreign key (product_id) references product (id_prod)" via JDBC [Cannot add or update a child row: a foreign key constraint fails (`nipponhub_db`.`#sql-3da4_21c`, CONSTRAINT `FK55xifxv49ka3iukskapu95tbg` FOREIGN KEY (`product_id`) REFERENCES `product` (`id_prod`))]
+
+org.hibernate.tool.schema.spi.CommandAcceptanceException: Error executing DDL "alter table vente_item add constraint FK55xifxv49ka3iukskapu95tbg foreign key (product_id) references product (id_prod)" via JDBC [Cannot add or update a child row: a foreign key constraint fails (`nipponhub_db`.`#sql-3da4_21c`, CONSTRAINT `FK55xifxv49ka3iukskapu95tbg` FOREIGN KEY (`product_id`) REFERENCES `product` (`id_prod`))]
+	at org.hibernate.tool.schema.internal.exec.GenerationTargetToDatabase.accept(GenerationTargetToDatabase.java:94) ~[hibernate-core-6.6.45.Final.jar:6.6.45.Final]
+	at org.hibernate.tool.schema.internal.AbstractSchemaMigrator.applySqlString(AbstractSchemaMigrator.java:576) ~[hibernate-core-6.6.45.Final.jar:6.6.45.Final]
+	at org.hibernate.tool.schema.internal.AbstractSchemaMigrator.applySqlStrings(AbstractSchemaMigrator.java:516) ~[hibernate-core-6.6.45.Final.jar:6.6.45.Final]
+	at org.hibernate.tool.schema.internal.AbstractSchemaMigrator.applyForeignKeys(AbstractSchemaMigrator.java:448) ~[hibernate-core-6.6.45.Final.jar:6.6.45.Final]
+	at org.hibernate.tool.schema.internal.AbstractSchemaMigrator.performMigration(AbstractSchemaMigrator.java:269) ~[hibernate-core-6.6.45.Final.jar:6.6.45.Final]
+	at org.hibernate.tool.schema.internal.AbstractSchemaMigrator.doMigration(AbstractSchemaMigrator.java:112) ~[hibernate-core-6.6.45.Final.jar:6.6.45.Final]
+	at org.hibernate.tool.schema.spi.SchemaManagementToolCoordinator.performDatabaseAction(SchemaManagementToolCoordinator.java:280) ~[hibernate-core-6.6.45.Final.jar:6.6.45.Final]
+	at org.hibernate.tool.schema.spi.SchemaManagementToolCoordinator.lambda$process$5(SchemaManagementToolCoordinator.java:144) ~[hibernate-core-6.6.45.Final.jar:6.6.45.Final]
+	at java.base/java.util.HashMap.forEach(HashMap.java:1429) ~[na:na]
+	at org.hibernate.tool.schema.spi.SchemaManagementToolCoordinator.process(SchemaManagementToolCoordinator.java:141) ~[hibernate-core-6.6.45.Final.jar:6.6.45.Final]
+	at org.hibernate.boot.internal.SessionFactoryObserverForSchemaExport.sessionFactoryCreated(SessionFactoryObserverForSchemaExport.java:37) ~[hibernate-core-6.6.45.Final.jar:6.6.45.Final]
+	at org.hibernate.internal.SessionFactoryObserverChain.sessionFactoryCreated(SessionFactoryObserverChain.java:35) ~[hibernate-core-6.6.45.Final.jar:6.6.45.Final]
+	at org.hibernate.internal.SessionFactoryImpl.<init>(SessionFactoryImpl.java:324) ~[hibernate-core-6.6.45.Final.jar:6.6.45.Final]
+	at org.hibernate.boot.internal.SessionFactoryBuilderImpl.build(SessionFactoryBuilderImpl.java:463) ~[hibernate-core-6.6.45.Final.jar:6.6.45.Final]
+	at org.hibernate.jpa.boot.internal.EntityManagerFactoryBuilderImpl.build(EntityManagerFactoryBuilderImpl.java:1517) ~[hibernate-core-6.6.45.Final.jar:6.6.45.Final]
+	at org.springframework.orm.jpa.vendor.SpringHibernateJpaPersistenceProvider.createContainerEntityManagerFactory(SpringHibernateJpaPersistenceProvider.java:66) ~[spring-orm-6.2.17.jar:6.2.17]
+	at org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean.createNativeEntityManagerFactory(LocalContainerEntityManagerFactoryBean.java:388) ~[spring-orm-6.2.17.jar:6.2.17]
+	at org.springframework.orm.jpa.AbstractEntityManagerFactoryBean.buildNativeEntityManagerFactory(AbstractEntityManagerFactoryBean.java:419) ~[spring-orm-6.2.17.jar:6.2.17]
+	at org.springframework.orm.jpa.AbstractEntityManagerFactoryBean.afterPropertiesSet(AbstractEntityManagerFactoryBean.java:400) ~[spring-orm-6.2.17.jar:6.2.17]
+	at org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean.afterPropertiesSet(LocalContainerEntityManagerFactoryBean.java:364) ~[spring-orm-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.invokeInitMethods(AbstractAutowireCapableBeanFactory.java:1873) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1822) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:607) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:529) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:339) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:373) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:337) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:202) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.support.BeanDefinitionValueResolver.resolveReference(BeanDefinitionValueResolver.java:365) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.support.BeanDefinitionValueResolver.resolveValueIfNecessary(BeanDefinitionValueResolver.java:135) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.support.ConstructorResolver.resolveConstructorArguments(ConstructorResolver.java:691) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.support.ConstructorResolver.instantiateUsingFactoryMethod(ConstructorResolver.java:513) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.instantiateUsingFactoryMethod(AbstractAutowireCapableBeanFactory.java:1375) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBeanInstance(AbstractAutowireCapableBeanFactory.java:1205) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:569) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:529) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:339) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:373) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:337) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:202) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.support.BeanDefinitionValueResolver.resolveReference(BeanDefinitionValueResolver.java:365) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.support.BeanDefinitionValueResolver.resolveValueIfNecessary(BeanDefinitionValueResolver.java:135) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.applyPropertyValues(AbstractAutowireCapableBeanFactory.java:1725) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.populateBean(AbstractAutowireCapableBeanFactory.java:1474) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:606) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:529) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:339) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:373) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:337) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:202) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.config.DependencyDescriptor.resolveCandidate(DependencyDescriptor.java:254) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1770) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1653) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.resolveFieldValue(AutowiredAnnotationBeanPostProcessor.java:784) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:767) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.annotation.InjectionMetadata.inject(InjectionMetadata.java:146) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessProperties(AutowiredAnnotationBeanPostProcessor.java:509) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.populateBean(AbstractAutowireCapableBeanFactory.java:1459) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:606) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:529) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:339) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:373) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:337) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:202) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1708) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1653) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.resolveFieldValue(AutowiredAnnotationBeanPostProcessor.java:784) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:767) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.annotation.InjectionMetadata.inject(InjectionMetadata.java:146) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessProperties(AutowiredAnnotationBeanPostProcessor.java:509) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.populateBean(AbstractAutowireCapableBeanFactory.java:1459) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:606) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:529) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:339) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:373) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:337) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:207) ~[spring-beans-6.2.17.jar:6.2.17]
+	at org.springframework.boot.web.servlet.ServletContextInitializerBeans.getOrderedBeansOfType(ServletContextInitializerBeans.java:230) ~[spring-boot-3.5.13.jar:3.5.13]
+	at org.springframework.boot.web.servlet.ServletContextInitializerBeans.addAsRegistrationBean(ServletContextInitializerBeans.java:184) ~[spring-boot-3.5.13.jar:3.5.13]
+	at org.springframework.boot.web.servlet.ServletContextInitializerBeans.addAsRegistrationBean(ServletContextInitializerBeans.java:179) ~[spring-boot-3.5.13.jar:3.5.13]
+	at org.springframework.boot.web.servlet.ServletContextInitializerBeans.addAdaptableBeans(ServletContextInitializerBeans.java:164) ~[spring-boot-3.5.13.jar:3.5.13]
+	at org.springframework.boot.web.servlet.ServletContextInitializerBeans.<init>(ServletContextInitializerBeans.java:96) ~[spring-boot-3.5.13.jar:3.5.13]
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.getServletContextInitializerBeans(ServletWebServerApplicationContext.java:271) ~[spring-boot-3.5.13.jar:3.5.13]
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.selfInitialize(ServletWebServerApplicationContext.java:245) ~[spring-boot-3.5.13.jar:3.5.13]
+	at org.springframework.boot.web.embedded.tomcat.TomcatStarter.onStartup(TomcatStarter.java:52) ~[spring-boot-3.5.13.jar:3.5.13]
+	at org.apache.catalina.core.StandardContext.startInternal(StandardContext.java:4452) ~[tomcat-embed-core-10.1.53.jar:10.1.53]
+	at org.apache.catalina.util.LifecycleBase.start(LifecycleBase.java:164) ~[tomcat-embed-core-10.1.53.jar:10.1.53]
+	at org.apache.catalina.core.ContainerBase$StartChild.call(ContainerBase.java:1201) ~[tomcat-embed-core-10.1.53.jar:10.1.53]
+	at org.apache.catalina.core.ContainerBase$StartChild.call(ContainerBase.java:1191) ~[tomcat-embed-core-10.1.53.jar:10.1.53]
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317) ~[na:na]
+	at org.apache.tomcat.util.threads.InlineExecutorService.execute(InlineExecutorService.java:81) ~[tomcat-embed-core-10.1.53.jar:10.1.53]
+	at java.base/java.util.concurrent.AbstractExecutorService.submit(AbstractExecutorService.java:145) ~[na:na]
+	at org.apache.catalina.core.ContainerBase.startInternal(ContainerBase.java:747) ~[tomcat-embed-core-10.1.53.jar:10.1.53]
+	at org.apache.catalina.core.StandardHost.startInternal(StandardHost.java:783) ~[tomcat-embed-core-10.1.53.jar:10.1.53]
+	at org.apache.catalina.util.LifecycleBase.start(LifecycleBase.java:164) ~[tomcat-embed-core-10.1.53.jar:10.1.53]
+	at org.apache.catalina.core.ContainerBase$StartChild.call(ContainerBase.java:1201) ~[tomcat-embed-core-10.1.53.jar:10.1.53]
+	at org.apache.catalina.core.ContainerBase$StartChild.call(ContainerBase.java:1191) ~[tomcat-embed-core-10.1.53.jar:10.1.53]
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317) ~[na:na]
+	at org.apache.tomcat.util.threads.InlineExecutorService.execute(InlineExecutorService.java:81) ~[tomcat-embed-core-10.1.53.jar:10.1.53]
+	at java.base/java.util.concurrent.AbstractExecutorService.submit(AbstractExecutorService.java:145) ~[na:na]
+	at org.apache.catalina.core.ContainerBase.startInternal(ContainerBase.java:747) ~[tomcat-embed-core-10.1.53.jar:10.1.53]
+	at org.apache.catalina.core.StandardEngine.startInternal(StandardEngine.java:201) ~[tomcat-embed-core-10.1.53.jar:10.1.53]
+	at org.apache.catalina.util.LifecycleBase.start(LifecycleBase.java:164) ~[tomcat-embed-core-10.1.53.jar:10.1.53]
+	at org.apache.catalina.core.StandardService.startInternal(StandardService.java:410) ~[tomcat-embed-core-10.1.53.jar:10.1.53]
+	at org.apache.catalina.util.LifecycleBase.start(LifecycleBase.java:164) ~[tomcat-embed-core-10.1.53.jar:10.1.53]
+	at org.apache.catalina.core.StandardServer.startInternal(StandardServer.java:868) ~[tomcat-embed-core-10.1.53.jar:10.1.53]
+	at org.apache.catalina.util.LifecycleBase.start(LifecycleBase.java:164) ~[tomcat-embed-core-10.1.53.jar:10.1.53]
+	at org.apache.catalina.startup.Tomcat.start(Tomcat.java:436) ~[tomcat-embed-core-10.1.53.jar:10.1.53]
+	at org.springframework.boot.web.embedded.tomcat.TomcatWebServer.initialize(TomcatWebServer.java:128) ~[spring-boot-3.5.13.jar:3.5.13]
+	at org.springframework.boot.web.embedded.tomcat.TomcatWebServer.<init>(TomcatWebServer.java:107) ~[spring-boot-3.5.13.jar:3.5.13]
+	at org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory.getTomcatWebServer(TomcatServletWebServerFactory.java:517) ~[spring-boot-3.5.13.jar:3.5.13]
+	at org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory.getWebServer(TomcatServletWebServerFactory.java:219) ~[spring-boot-3.5.13.jar:3.5.13]
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.createWebServer(ServletWebServerApplicationContext.java:193) ~[spring-boot-3.5.13.jar:3.5.13]
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.onRefresh(ServletWebServerApplicationContext.java:167) ~[spring-boot-3.5.13.jar:3.5.13]
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:622) ~[spring-context-6.2.17.jar:6.2.17]
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:146) ~[spring-boot-3.5.13.jar:3.5.13]
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:752) ~[spring-boot-3.5.13.jar:3.5.13]
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:439) ~[spring-boot-3.5.13.jar:3.5.13]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:318) ~[spring-boot-3.5.13.jar:3.5.13]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1361) ~[spring-boot-3.5.13.jar:3.5.13]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1350) ~[spring-boot-3.5.13.jar:3.5.13]
+	at com.nipponhub.nipponhubv0.NipponhubApplication.main(NipponhubApplication.java:10) ~[classes/:na]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
+	at org.springframework.boot.devtools.restart.RestartLauncher.run(RestartLauncher.java:50) ~[spring-boot-devtools-3.5.13.jar:3.5.13]
+Caused by: java.sql.SQLIntegrityConstraintViolationException: Cannot add or update a child row: a foreign key constraint fails (`nipponhub_db`.`#sql-3da4_21c`, CONSTRAINT `FK55xifxv49ka3iukskapu95tbg` FOREIGN KEY (`product_id`) REFERENCES `product` (`id_prod`))
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:109) ~[mysql-connector-j-9.6.0.jar:9.6.0]
+	at com.mysql.cj.jdbc.exceptions.SQLExceptionsMapping.translateException(SQLExceptionsMapping.java:114) ~[mysql-connector-j-9.6.0.jar:9.6.0]
+	at com.mysql.cj.jdbc.StatementImpl.executeInternal(StatementImpl.java:839) ~[mysql-connector-j-9.6.0.jar:9.6.0]
+	at com.mysql.cj.jdbc.StatementImpl.execute(StatementImpl.java:687) ~[mysql-connector-j-9.6.0.jar:9.6.0]
+	at com.zaxxer.hikari.pool.ProxyStatement.execute(ProxyStatement.java:95) ~[HikariCP-6.3.3.jar:na]
+	at com.zaxxer.hikari.pool.HikariProxyStatement.execute(HikariProxyStatement.java) ~[HikariCP-6.3.3.jar:na]
+	at org.hibernate.tool.schema.internal.exec.GenerationTargetToDatabase.accept(GenerationTargetToDatabase.java:80) ~[hibernate-core-6.6.45.Final.jar:6.6.45.Final]
+	... 124 common frames omitted
+
+2026-04-07T19:00:29.387+01:00  INFO 13324 --- [nipponhub] [restartedMain] eAuthenticationProviderManagerConfigurer : Global AuthenticationManager configured with AuthenticationProvider bean with name authenticationProvider
+2026-04-07T19:00:29.387+01:00  WARN 13324 --- [nipponhub] [restartedMain] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used by Spring Security for automatically configuring username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider. If the current configuration is intentional, to turn off this warning, increase the logging level of 'org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer' to ERROR
+2026-04-07T19:00:29.620+01:00  WARN 13324 --- [nipponhub] [restartedMain] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-04-07T19:00:29.832+01:00 DEBUG 13324 --- [nipponhub] [restartedMain] o.s.s.web.DefaultSecurityFilterChain     : Will secure any request with filters: DisableEncodeUrlFilter, WebAsyncManagerIntegrationFilter, SecurityContextHolderFilter, HeaderWriterFilter, CorsFilter, LogoutFilter, SimpleRateLimitFilter, JWTAuthFilter$$SpringCGLIB$$0, RequestCacheAwareFilter, SecurityContextHolderAwareRequestFilter, AnonymousAuthenticationFilter, SessionManagementFilter, ExceptionTranslationFilter, AuthorizationFilter
+2026-04-07T19:00:30.051+01:00  INFO 13324 --- [nipponhub] [restartedMain] c.n.nipponhubv0.NipponhubApplication     : Started NipponhubApplication in 3.801 seconds (process running for 13691.664)
+2026-04-07T19:00:30.052+01:00  WARN 13324 --- [nipponhub] [restartedMain] o.s.core.events.SpringDocAppInitializer  : SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
+2026-04-07T19:00:30.053+01:00  WARN 13324 --- [nipponhub] [restartedMain] o.s.core.events.SpringDocAppInitializer  : SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
+2026-04-07T19:00:32.564+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /api/v0/product/1/activity
+2026-04-07T19:00:32.772+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Secured GET /api/v0/product/1/activity
+2026-04-07T19:00:32.775+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-1] horizationManagerBeforeMethodInterceptor : Authorizing method invocation ReflectiveMethodInvocation: public org.springframework.http.ResponseEntity com.nipponhub.nipponhubv0.Controllers.ProductController.getProductActivity(java.lang.Long); target is of class [com.nipponhub.nipponhubv0.Controllers.ProductController]
+2026-04-07T19:00:32.777+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-1] horizationManagerBeforeMethodInterceptor : Authorized method invocation ReflectiveMethodInvocation: public org.springframework.http.ResponseEntity com.nipponhub.nipponhubv0.Controllers.ProductController.getProductActivity(java.lang.Long); target is of class [com.nipponhub.nipponhubv0.Controllers.ProductController]
+2026-04-07T19:07:04.601+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing POST /auth/login
+2026-04-07T19:07:04.642+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-3] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-04-07T19:07:04.645+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Secured POST /auth/login
+2026-04-07T19:07:05.685+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-3] o.s.s.a.dao.DaoAuthenticationProvider    : Authenticated user
+2026-04-07T19:07:14.093+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing GET /api/v0/product/all
+2026-04-07T19:07:14.138+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Secured GET /api/v0/product/all
+2026-04-07T19:07:16.135+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing GET /api/v0/product/all
+2026-04-07T19:07:16.227+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Secured GET /api/v0/product/all
+2026-04-07T19:07:19.237+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing GET /api/v0/categories/getAllCategories
+2026-04-07T19:07:19.260+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Secured GET /api/v0/categories/getAllCategories
+2026-04-07T19:07:20.828+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /api/v0/country/getAllCountries
+2026-04-07T19:07:20.877+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Secured GET /api/v0/country/getAllCountries
+2026-04-07T19:07:26.690+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing GET /api/v0/product/45
+2026-04-07T19:07:26.741+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Secured GET /api/v0/product/45
+2026-04-07T19:07:45.300+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing GET /api/v0/product/searchByName?prodName=Fire%20Emblem%20Weapons%20Metal%20Enamel%20Pin%20Set
+2026-04-07T19:07:45.331+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Secured GET /api/v0/product/searchByName?prodName=Fire%20Emblem%20Weapons%20Metal%20Enamel%20Pin%20Set
+2026-04-07T19:07:53.267+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /api/v0/product/searchByCountry?country=Japan
+2026-04-07T19:07:53.282+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Secured GET /api/v0/product/searchByCountry?country=Japan
+2026-04-07T19:07:53.384+01:00  INFO 13324 --- [nipponhub] [http-nio-8080-exec-1] c.n.nipponhubv0.Services.ProductService  : Found 51 product(s) for country: Japan
+2026-04-07T19:12:39.107+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing POST /auth/register
+2026-04-07T19:12:39.108+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-4] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-04-07T19:12:39.109+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Secured POST /auth/register
+2026-04-07T19:12:39.351+01:00  INFO 13324 --- [nipponhub] [http-nio-8080-exec-4] c.n.n.Services.UsersManagementService    : Profile picture uploaded — gridFsId: 69d549176e528173a08f32c9
+2026-04-07T19:13:03.356+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing POST /auth/login
+2026-04-07T19:13:03.364+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-6] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-04-07T19:13:03.401+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Secured POST /auth/login
+2026-04-07T19:13:04.661+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-6] o.s.s.a.dao.DaoAuthenticationProvider    : Authenticated user
+2026-04-07T19:18:52.033+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing POST /auth/register
+2026-04-07T19:18:52.037+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-8] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-04-07T19:18:52.043+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Secured POST /auth/register
+2026-04-07T19:18:52.110+01:00  INFO 13324 --- [nipponhub] [http-nio-8080-exec-8] c.n.n.Services.UsersManagementService    : Profile picture uploaded — gridFsId: 69d54a8c6e528173a08f32cc
+2026-04-07T19:19:14.394+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing POST /auth/login
+2026-04-07T19:19:14.399+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-10] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-04-07T19:19:14.400+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Secured POST /auth/login
+2026-04-07T19:19:15.034+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-10] o.s.s.a.dao.DaoAuthenticationProvider    : Failed to authenticate since password does not match stored value
+2026-04-07T19:19:15.048+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-10] o.s.s.authentication.ProviderManager     : Authentication failed with provider DaoAuthenticationProvider since Bad credentials
+2026-04-07T19:19:15.051+01:00  WARN 13324 --- [nipponhub] [http-nio-8080-exec-10] c.n.n.Services.UsersManagementService    : Login failed for [client3@example.com]: Bad credentials
+2026-04-07T19:19:27.947+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing POST /auth/login
+2026-04-07T19:19:27.996+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-2] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-04-07T19:19:28.016+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Secured POST /auth/login
+2026-04-07T19:19:30.008+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-2] o.s.s.a.dao.DaoAuthenticationProvider    : Authenticated user
+2026-04-07T19:23:20.178+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing POST /auth/register
+2026-04-07T19:23:20.179+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-3] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-04-07T19:23:20.181+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Secured POST /auth/register
+2026-04-07T19:23:20.242+01:00  INFO 13324 --- [nipponhub] [http-nio-8080-exec-3] c.n.n.Services.UsersManagementService    : Profile picture uploaded — gridFsId: 69d54b986e528173a08f32ce
+2026-04-07T19:23:42.462+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing POST /auth/login
+2026-04-07T19:23:42.574+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-5] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-04-07T19:23:42.674+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Secured POST /auth/login
+2026-04-07T19:23:44.419+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-5] o.s.s.a.dao.DaoAuthenticationProvider    : Failed to find user 'client4@example.com'
+2026-04-07T19:23:44.428+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-5] o.s.s.authentication.ProviderManager     : Authentication failed with provider DaoAuthenticationProvider since Bad credentials
+2026-04-07T19:23:44.444+01:00  WARN 13324 --- [nipponhub] [http-nio-8080-exec-5] c.n.n.Services.UsersManagementService    : Login failed for [client4@example.com]: Bad credentials
+2026-04-07T19:23:55.372+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing POST /auth/login
+2026-04-07T19:23:55.372+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-7] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-04-07T19:23:55.373+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Secured POST /auth/login
+2026-04-07T19:23:55.809+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-7] o.s.s.a.dao.DaoAuthenticationProvider    : Failed to find user 'client4@example.com'
+2026-04-07T19:23:55.811+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-7] o.s.s.authentication.ProviderManager     : Authentication failed with provider DaoAuthenticationProvider since Bad credentials
+2026-04-07T19:23:55.811+01:00  WARN 13324 --- [nipponhub] [http-nio-8080-exec-7] c.n.n.Services.UsersManagementService    : Login failed for [client4@example.com]: Bad credentials
+2026-04-07T19:24:14.683+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /nipponhub-test-console.html
+2026-04-07T19:24:14.688+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-8] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-04-07T19:24:14.690+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Secured GET /nipponhub-test-console.html
+2026-04-07T19:24:14.822+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing GET /favicon.ico
+2026-04-07T19:24:14.824+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-9] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-04-07T19:24:14.838+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-9] o.s.s.w.a.Http403ForbiddenEntryPoint     : Pre-authenticated entry point called. Rejecting access
+2026-04-07T19:24:14.846+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing GET /error
+2026-04-07T19:24:14.846+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-9] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-04-07T19:24:14.847+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-9] o.s.s.w.a.Http403ForbiddenEntryPoint     : Pre-authenticated entry point called. Rejecting access
+2026-04-07T19:27:57.717+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /nipponhub-test-console.html
+2026-04-07T19:27:57.744+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-2] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-04-07T19:27:57.772+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Secured GET /nipponhub-test-console.html
+2026-04-07T19:27:59.247+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /favicon.ico
+2026-04-07T19:27:59.251+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-3] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-04-07T19:27:59.252+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-3] o.s.s.w.a.Http403ForbiddenEntryPoint     : Pre-authenticated entry point called. Rejecting access
+2026-04-07T19:27:59.254+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /error
+2026-04-07T19:27:59.255+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-3] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-04-07T19:27:59.261+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-3] o.s.s.w.a.Http403ForbiddenEntryPoint     : Pre-authenticated entry point called. Rejecting access
+2026-04-07T19:30:01.436+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing POST /auth/login
+2026-04-07T19:30:01.438+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-6] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-04-07T19:30:01.440+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Secured POST /auth/login
+2026-04-07T19:30:01.542+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-6] o.s.s.a.dao.DaoAuthenticationProvider    : Failed to authenticate since password does not match stored value
+2026-04-07T19:30:01.543+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-6] o.s.s.authentication.ProviderManager     : Authentication failed with provider DaoAuthenticationProvider since Bad credentials
+2026-04-07T19:30:01.543+01:00  WARN 13324 --- [nipponhub] [http-nio-8080-exec-6] c.n.n.Services.UsersManagementService    : Login failed for [james@nipponhub.com]: Bad credentials
+2026-04-07T19:30:10.234+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing POST /auth/login
+2026-04-07T19:30:10.235+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-7] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-04-07T19:30:10.236+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Secured POST /auth/login
+2026-04-07T19:30:10.332+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-7] o.s.s.a.dao.DaoAuthenticationProvider    : Authenticated user
+2026-04-07T19:35:17.594+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing POST /auth/register
+2026-04-07T19:35:17.595+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-9] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-04-07T19:35:17.595+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Secured POST /auth/register
+2026-04-07T19:35:17.617+01:00  INFO 13324 --- [nipponhub] [http-nio-8080-exec-9] c.n.n.Services.UsersManagementService    : Profile picture uploaded — gridFsId: 69d54e656e528173a08f32d0
+2026-04-07T19:35:34.146+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing POST /auth/login
+2026-04-07T19:35:34.147+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-1] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-04-07T19:35:34.148+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Secured POST /auth/login
+2026-04-07T19:35:34.245+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-1] o.s.s.a.dao.DaoAuthenticationProvider    : Authenticated user
+2026-04-07T19:36:38.324+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing POST /auth/login
+2026-04-07T19:36:38.327+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-2] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-04-07T19:36:38.332+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Secured POST /auth/login
+2026-04-07T19:36:38.703+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-2] o.s.s.a.dao.DaoAuthenticationProvider    : Failed to find user 'alice@example.com'
+2026-04-07T19:36:38.703+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-2] o.s.s.authentication.ProviderManager     : Authentication failed with provider DaoAuthenticationProvider since Bad credentials
+2026-04-07T19:36:38.703+01:00  WARN 13324 --- [nipponhub] [http-nio-8080-exec-2] c.n.n.Services.UsersManagementService    : Login failed for [alice@example.com]: Bad credentials
+2026-04-07T19:36:51.036+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing POST /auth/login
+2026-04-07T19:36:51.038+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-3] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-04-07T19:36:51.038+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Secured POST /auth/login
+2026-04-07T19:36:51.366+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-3] o.s.s.a.dao.DaoAuthenticationProvider    : Failed to authenticate since password does not match stored value
+2026-04-07T19:36:51.367+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-3] o.s.s.authentication.ProviderManager     : Authentication failed with provider DaoAuthenticationProvider since Bad credentials
+2026-04-07T19:36:51.383+01:00  WARN 13324 --- [nipponhub] [http-nio-8080-exec-3] c.n.n.Services.UsersManagementService    : Login failed for [client6@example.com]: Bad credentials
+2026-04-07T19:37:01.550+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing POST /auth/login
+2026-04-07T19:37:01.555+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-4] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-04-07T19:37:01.565+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Secured POST /auth/login
+2026-04-07T19:37:02.149+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-4] o.s.s.a.dao.DaoAuthenticationProvider    : Failed to authenticate since password does not match stored value
+2026-04-07T19:37:02.151+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-4] o.s.s.authentication.ProviderManager     : Authentication failed with provider DaoAuthenticationProvider since Bad credentials
+2026-04-07T19:37:02.156+01:00  WARN 13324 --- [nipponhub] [http-nio-8080-exec-4] c.n.n.Services.UsersManagementService    : Login failed for [client6@example.com]: Bad credentials
+2026-04-07T19:37:21.843+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing POST /auth/login
+2026-04-07T19:37:21.860+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-5] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-04-07T19:37:22.007+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Secured POST /auth/login
+2026-04-07T19:37:22.773+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-5] o.s.s.a.dao.DaoAuthenticationProvider    : Failed to authenticate since password does not match stored value
+2026-04-07T19:37:22.781+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-5] o.s.s.authentication.ProviderManager     : Authentication failed with provider DaoAuthenticationProvider since Bad credentials
+2026-04-07T19:37:22.782+01:00  WARN 13324 --- [nipponhub] [http-nio-8080-exec-5] c.n.n.Services.UsersManagementService    : Login failed for [client6@example.com]: Bad credentials
+2026-04-07T19:38:25.177+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing GET /nipponhub-test-console.html
+2026-04-07T19:38:25.179+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-7] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-04-07T19:38:25.180+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Secured GET /nipponhub-test-console.html
+2026-04-07T19:38:25.529+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /favicon.ico
+2026-04-07T19:38:25.532+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-8] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-04-07T19:38:25.532+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-8] o.s.s.w.a.Http403ForbiddenEntryPoint     : Pre-authenticated entry point called. Rejecting access
+2026-04-07T19:38:25.534+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /error
+2026-04-07T19:38:25.534+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-8] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-04-07T19:38:25.535+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-8] o.s.s.w.a.Http403ForbiddenEntryPoint     : Pre-authenticated entry point called. Rejecting access
+2026-04-07T19:39:39.451+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing POST /auth/register
+2026-04-07T19:39:39.452+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-10] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-04-07T19:39:39.452+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Secured POST /auth/register
+2026-04-07T19:39:53.797+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing POST /auth/register
+2026-04-07T19:39:53.798+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-2] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-04-07T19:39:53.799+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Secured POST /auth/register
+2026-04-07T19:39:53.838+01:00  INFO 13324 --- [nipponhub] [http-nio-8080-exec-2] c.n.n.Services.UsersManagementService    : Profile picture uploaded — gridFsId: 69d54f796e528173a08f32d2
+2026-04-07T19:40:07.844+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing POST /auth/login
+2026-04-07T19:40:07.847+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-3] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-04-07T19:40:07.847+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Secured POST /auth/login
+2026-04-07T19:40:08.217+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-3] o.s.s.a.dao.DaoAuthenticationProvider    : Authenticated user
+2026-04-07T19:40:17.460+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /api/v0/product/all
+2026-04-07T19:40:17.469+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /api/v0/product/all
+2026-04-07T19:40:18.920+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing GET /api/v0/categories/getAllCategories
+2026-04-07T19:40:18.978+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Secured GET /api/v0/categories/getAllCategories
+2026-04-07T19:40:20.260+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing GET /api/v0/country/getAllCountries
+2026-04-07T19:40:20.270+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Secured GET /api/v0/country/getAllCountries
+2026-04-07T19:40:22.151+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing GET /api/v0/product/1
+2026-04-07T19:40:22.204+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Secured GET /api/v0/product/1
+2026-04-07T19:40:24.537+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /api/v0/product/searchByCountry?country=
+2026-04-07T19:40:24.548+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Secured GET /api/v0/product/searchByCountry?country=
+2026-04-07T19:40:24.559+01:00  WARN 13324 --- [nipponhub] [http-nio-8080-exec-8] c.n.nipponhubv0.Services.ProductService  : No country found with name: 
+2026-04-07T19:40:28.980+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing GET /api/v0/product/searchByCountry?country=Japan
+2026-04-07T19:40:28.988+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Secured GET /api/v0/product/searchByCountry?country=Japan
+2026-04-07T19:40:29.180+01:00  INFO 13324 --- [nipponhub] [http-nio-8080-exec-9] c.n.nipponhubv0.Services.ProductService  : Found 51 product(s) for country: Japan
+2026-04-07T19:40:36.593+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /api/adminuser/get-profile
+2026-04-07T19:40:36.598+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Secured GET /api/adminuser/get-profile
+2026-04-07T19:40:36.600+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-1] horizationManagerBeforeMethodInterceptor : Authorizing method invocation ReflectiveMethodInvocation: public org.springframework.http.ResponseEntity com.nipponhub.nipponhubv0.Controllers.UserManagementController.getMyProfile(); target is of class [com.nipponhub.nipponhubv0.Controllers.UserManagementController]
+2026-04-07T19:40:36.603+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-1] horizationManagerBeforeMethodInterceptor : Authorized method invocation ReflectiveMethodInvocation: public org.springframework.http.ResponseEntity com.nipponhub.nipponhubv0.Controllers.UserManagementController.getMyProfile(); target is of class [com.nipponhub.nipponhubv0.Controllers.UserManagementController]
+2026-04-07T21:55:48.463+01:00  WARN 13324 --- [nipponhub] [NipponHubPool:housekeeper] com.zaxxer.hikari.pool.HikariPool        : NipponHubPool - Thread starvation or clock leap detected (housekeeper delta=2h8m20s8ms269µs400ns).
+2026-04-07T21:56:25.391+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /nipponhub-test-console.html
+2026-04-07T21:56:25.396+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-2] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-04-07T21:56:25.398+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Secured GET /nipponhub-test-console.html
+2026-04-07T21:56:25.865+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /favicon.ico
+2026-04-07T21:56:25.866+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-3] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-04-07T21:56:25.868+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-3] o.s.s.w.a.Http403ForbiddenEntryPoint     : Pre-authenticated entry point called. Rejecting access
+2026-04-07T21:56:25.870+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /error
+2026-04-07T21:56:25.870+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-3] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-04-07T21:56:25.871+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-3] o.s.s.w.a.Http403ForbiddenEntryPoint     : Pre-authenticated entry point called. Rejecting access
+2026-04-07T21:57:49.360+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing POST /auth/register
+2026-04-07T21:57:49.360+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-6] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-04-07T21:57:49.361+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Secured POST /auth/register
+2026-04-07T21:57:49.432+01:00  INFO 13324 --- [nipponhub] [http-nio-8080-exec-6] c.n.n.Services.UsersManagementService    : Profile picture uploaded — gridFsId: 69d56fcd6e528173a08f32d4
+2026-04-07T21:58:04.327+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing POST /auth/login
+2026-04-07T21:58:04.333+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-7] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-04-07T21:58:04.336+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Secured POST /auth/login
+2026-04-07T21:58:04.712+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-7] o.s.s.a.dao.DaoAuthenticationProvider    : Authenticated user
+2026-04-07T21:58:12.648+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /api/adminuser/get-profile
+2026-04-07T21:58:13.027+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Secured GET /api/adminuser/get-profile
+2026-04-07T21:58:13.061+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-8] horizationManagerBeforeMethodInterceptor : Authorizing method invocation ReflectiveMethodInvocation: public org.springframework.http.ResponseEntity com.nipponhub.nipponhubv0.Controllers.UserManagementController.getMyProfile(); target is of class [com.nipponhub.nipponhubv0.Controllers.UserManagementController]
+2026-04-07T21:58:13.117+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-8] horizationManagerBeforeMethodInterceptor : Authorized method invocation ReflectiveMethodInvocation: public org.springframework.http.ResponseEntity com.nipponhub.nipponhubv0.Controllers.UserManagementController.getMyProfile(); target is of class [com.nipponhub.nipponhubv0.Controllers.UserManagementController]
+2026-04-07T21:58:49.051+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing POST /api/v0/commande/new
+2026-04-07T21:58:49.066+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Secured POST /api/v0/commande/new
+2026-04-07T21:58:49.107+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-9] horizationManagerBeforeMethodInterceptor : Authorizing method invocation ReflectiveMethodInvocation: public org.springframework.http.ResponseEntity com.nipponhub.nipponhubv0.Controllers.CommandeController.placeCommande(com.nipponhub.nipponhubv0.DTO.CommandeDto); target is of class [com.nipponhub.nipponhubv0.Controllers.CommandeController]
+2026-04-07T21:58:49.136+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-9] horizationManagerBeforeMethodInterceptor : Authorized method invocation ReflectiveMethodInvocation: public org.springframework.http.ResponseEntity com.nipponhub.nipponhubv0.Controllers.CommandeController.placeCommande(com.nipponhub.nipponhubv0.DTO.CommandeDto); target is of class [com.nipponhub.nipponhubv0.Controllers.CommandeController]
+2026-04-07T22:02:43.450+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing POST /auth/login
+2026-04-07T22:02:43.451+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-10] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-04-07T22:02:43.451+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Secured POST /auth/login
+2026-04-07T22:02:43.992+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-10] o.s.s.a.dao.DaoAuthenticationProvider    : Authenticated user
+2026-04-07T22:02:57.899+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /api/v0/commande/status/PENDING
+2026-04-07T22:02:57.959+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Secured GET /api/v0/commande/status/PENDING
+2026-04-07T22:02:57.963+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-2] horizationManagerBeforeMethodInterceptor : Authorizing method invocation ReflectiveMethodInvocation: public org.springframework.http.ResponseEntity com.nipponhub.nipponhubv0.Controllers.CommandeController.getByStatus(com.nipponhub.nipponhubv0.Models.Enum.CommandeStatus); target is of class [com.nipponhub.nipponhubv0.Controllers.CommandeController]
+2026-04-07T22:02:57.983+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-2] horizationManagerBeforeMethodInterceptor : Authorized method invocation ReflectiveMethodInvocation: public org.springframework.http.ResponseEntity com.nipponhub.nipponhubv0.Controllers.CommandeController.getByStatus(com.nipponhub.nipponhubv0.Models.Enum.CommandeStatus); target is of class [com.nipponhub.nipponhubv0.Controllers.CommandeController]
+2026-04-07T22:03:05.809+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing PUT /api/v0/commande/4/confirm
+2026-04-07T22:03:05.825+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Secured PUT /api/v0/commande/4/confirm
+2026-04-07T22:03:05.856+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-3] horizationManagerBeforeMethodInterceptor : Authorizing method invocation ReflectiveMethodInvocation: public org.springframework.http.ResponseEntity com.nipponhub.nipponhubv0.Controllers.CommandeController.confirm(java.lang.Long); target is of class [com.nipponhub.nipponhubv0.Controllers.CommandeController]
+2026-04-07T22:03:05.857+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-3] horizationManagerBeforeMethodInterceptor : Authorized method invocation ReflectiveMethodInvocation: public org.springframework.http.ResponseEntity com.nipponhub.nipponhubv0.Controllers.CommandeController.confirm(java.lang.Long); target is of class [com.nipponhub.nipponhubv0.Controllers.CommandeController]
+2026-04-07T22:03:09.088+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing PUT /api/v0/commande/4/deliver
+2026-04-07T22:03:09.174+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Secured PUT /api/v0/commande/4/deliver
+2026-04-07T22:03:09.247+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-4] horizationManagerBeforeMethodInterceptor : Authorizing method invocation ReflectiveMethodInvocation: public org.springframework.http.ResponseEntity com.nipponhub.nipponhubv0.Controllers.CommandeController.deliver(java.lang.Long); target is of class [com.nipponhub.nipponhubv0.Controllers.CommandeController]
+2026-04-07T22:03:09.418+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-4] horizationManagerBeforeMethodInterceptor : Authorized method invocation ReflectiveMethodInvocation: public org.springframework.http.ResponseEntity com.nipponhub.nipponhubv0.Controllers.CommandeController.deliver(java.lang.Long); target is of class [com.nipponhub.nipponhubv0.Controllers.CommandeController]
+2026-04-07T22:03:16.839+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing GET /api/v0/commande/4
+2026-04-07T22:03:16.859+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Secured GET /api/v0/commande/4
+2026-04-07T22:03:16.860+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-5] horizationManagerBeforeMethodInterceptor : Authorizing method invocation ReflectiveMethodInvocation: public org.springframework.http.ResponseEntity com.nipponhub.nipponhubv0.Controllers.CommandeController.getCommande(java.lang.Long); target is of class [com.nipponhub.nipponhubv0.Controllers.CommandeController]
+2026-04-07T22:03:16.861+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-5] horizationManagerBeforeMethodInterceptor : Authorized method invocation ReflectiveMethodInvocation: public org.springframework.http.ResponseEntity com.nipponhub.nipponhubv0.Controllers.CommandeController.getCommande(java.lang.Long); target is of class [com.nipponhub.nipponhubv0.Controllers.CommandeController]
+2026-04-07T22:05:05.618+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing GET /api/v0/commande/all
+2026-04-07T22:05:05.639+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Secured GET /api/v0/commande/all
+2026-04-07T22:05:05.655+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-7] horizationManagerBeforeMethodInterceptor : Authorizing method invocation ReflectiveMethodInvocation: public org.springframework.http.ResponseEntity com.nipponhub.nipponhubv0.Controllers.CommandeController.getAllCommandes(); target is of class [com.nipponhub.nipponhubv0.Controllers.CommandeController]
+2026-04-07T22:05:05.659+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-7] horizationManagerBeforeMethodInterceptor : Authorized method invocation ReflectiveMethodInvocation: public org.springframework.http.ResponseEntity com.nipponhub.nipponhubv0.Controllers.CommandeController.getAllCommandes(); target is of class [com.nipponhub.nipponhubv0.Controllers.CommandeController]
+2026-04-07T22:05:18.620+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /api/v0/product/all
+2026-04-07T22:05:18.629+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Secured GET /api/v0/product/all
+2026-04-07T22:05:31.390+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing GET /api/v0/categories/getAllCategories
+2026-04-07T22:05:31.396+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Secured GET /api/v0/categories/getAllCategories
+2026-04-07T22:05:34.072+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /api/v0/country/getAllCountries
+2026-04-07T22:05:34.077+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Secured GET /api/v0/country/getAllCountries
+2026-04-07T22:05:39.308+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing GET /api/v0/categories/6
+2026-04-07T22:05:39.320+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Secured GET /api/v0/categories/6
+2026-04-07T22:06:40.182+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing POST /api/admin/create-user
+2026-04-07T22:06:40.188+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Secured POST /api/admin/create-user
+2026-04-07T22:06:40.217+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-2] horizationManagerBeforeMethodInterceptor : Authorizing method invocation ReflectiveMethodInvocation: public org.springframework.http.ResponseEntity com.nipponhub.nipponhubv0.Controllers.UserManagementController.createPrivilegedUser(java.lang.String,java.lang.String,java.lang.String,java.lang.String,com.nipponhub.nipponhubv0.Models.Enum.UserRole,org.springframework.web.multipart.MultipartFile) throws java.io.IOException; target is of class [com.nipponhub.nipponhubv0.Controllers.UserManagementController]
+2026-04-07T22:06:40.219+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-2] horizationManagerBeforeMethodInterceptor : Authorized method invocation ReflectiveMethodInvocation: public org.springframework.http.ResponseEntity com.nipponhub.nipponhubv0.Controllers.UserManagementController.createPrivilegedUser(java.lang.String,java.lang.String,java.lang.String,java.lang.String,com.nipponhub.nipponhubv0.Models.Enum.UserRole,org.springframework.web.multipart.MultipartFile) throws java.io.IOException; target is of class [com.nipponhub.nipponhubv0.Controllers.UserManagementController]
+2026-04-07T22:21:32.899+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /swagger-ui/index.html
+2026-04-07T22:21:32.908+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-4] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-04-07T22:21:32.910+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /swagger-ui/index.html
+2026-04-07T22:21:32.983+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing GET /swagger-ui/index.css
+2026-04-07T22:21:32.983+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing GET /swagger-ui/swagger-ui.css
+2026-04-07T22:21:32.988+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-6] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-04-07T22:21:32.988+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-5] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-04-07T22:21:32.988+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Secured GET /swagger-ui/swagger-ui.css
+2026-04-07T22:21:32.988+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Secured GET /swagger-ui/index.css
+2026-04-07T22:21:32.990+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing GET /swagger-ui/swagger-ui-bundle.js
+2026-04-07T22:21:32.990+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing GET /swagger-ui/swagger-initializer.js
+2026-04-07T22:21:32.991+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /swagger-ui/swagger-ui-standalone-preset.js
+2026-04-07T22:21:32.992+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-9] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-04-07T22:21:32.992+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-7] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-04-07T22:21:32.993+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Secured GET /swagger-ui/swagger-initializer.js
+2026-04-07T22:21:32.993+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-8] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-04-07T22:21:32.993+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Secured GET /swagger-ui/swagger-ui-bundle.js
+2026-04-07T22:21:32.994+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Secured GET /swagger-ui/swagger-ui-standalone-preset.js
+2026-04-07T22:21:33.229+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /v3/api-docs/swagger-config
+2026-04-07T22:21:33.230+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-1] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-04-07T22:21:33.230+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing GET /swagger-ui/favicon-32x32.png
+2026-04-07T22:21:33.230+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Secured GET /v3/api-docs/swagger-config
+2026-04-07T22:21:33.230+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-10] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-04-07T22:21:33.230+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Secured GET /swagger-ui/favicon-32x32.png
+2026-04-07T22:21:33.249+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /v3/api-docs
+2026-04-07T22:21:33.250+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-2] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-04-07T22:21:33.250+01:00 DEBUG 13324 --- [nipponhub] [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Secured GET /v3/api-docs
