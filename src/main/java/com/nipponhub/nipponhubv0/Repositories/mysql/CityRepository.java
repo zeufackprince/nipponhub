@@ -56,13 +56,6 @@ public interface CityRepository extends JpaRepository<City, Long> {
     @Query("SELECT c FROM City c WHERE c.cityName = :cityName AND c.country.countryName = :countryName")
     Optional<City> findByCityNameAndCountryName(@Param("cityName") String cityName, @Param("countryName") String countryName);
 
-    /**
-     * Find all cities.
-     * Useful for admin operations or generating city lists.
-     *
-     * @return list of all cities
-     */
-    List<City> findAll();
 
     /**
      * Find cities by city code.
