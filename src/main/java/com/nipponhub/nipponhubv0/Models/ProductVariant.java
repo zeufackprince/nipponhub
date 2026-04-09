@@ -28,6 +28,7 @@ public class ProductVariant {
 
     private String sku;
     private BigDecimal priceOverride;
+    private String attributes;
     
     // @ManyToMany
     // @JoinTable(

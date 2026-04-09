@@ -9,13 +9,13 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.nipponhub.nipponhubv0.DTO.AchatDto;
-import com.nipponhub.nipponhubv0.DTO.AchatItemDetailDto;
-import com.nipponhub.nipponhubv0.Models.AchatItem;
-import com.nipponhub.nipponhubv0.Models.Achats;
+import com.nipponhub.nipponhubv0.DTO.RestockDto;
+import com.nipponhub.nipponhubv0.DTO.RestockItemDetailDto;
+import com.nipponhub.nipponhubv0.Models.RestockItem;
+import com.nipponhub.nipponhubv0.Models.Restocks;
 import com.nipponhub.nipponhubv0.Models.Product;
 import com.nipponhub.nipponhubv0.Models.ProductActivity;
-import com.nipponhub.nipponhubv0.Repositories.mysql.AchatRepository;
+import com.nipponhub.nipponhubv0.Repositories.mysql.RestockRepository;
 import com.nipponhub.nipponhubv0.Repositories.mysql.ProductActivityRepository;
 import com.nipponhub.nipponhubv0.Repositories.mysql.ProductRepository;
 
@@ -24,27 +24,27 @@ import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
-public class AchatService {
+public class RestockService {
 
-    private final AchatRepository achatRepository;
+    private final RestockRepository RestockRepository;
     private final ProductActivityRepository activityRepos;
     private final ProductRepository productRepository;
 
     @Transactional
-    public AchatDto createAchat(Achats request, String performedBy, String performedByRole) {
-        Achats achat = new Achats();
-        achat.setDate(LocalDate.now());  // ignore client-supplied date
+    public RestockDto createRestock(Restocks request, String performedBy, String performedByRole) {
+        Restocks Restock = new Restocks();
+        Restock.setDate(LocalDate.now());  // ignore client-supplied date
 
-        List<AchatItem> items = new ArrayList<>();
-        for (AchatItem reqItem : request.getItems()) {
+        List<RestockItem> items = new ArrayList<>();
+        for (RestockItem reqItem : request.getItems()) {
             Product product = productRepository.findById(reqItem.getProduct().getIdProd())
                     .orElseThrow(() -> new EntityNotFoundException(
                             "Produit non trouvé avec ID : " + reqItem.getProduct().getIdProd()));
 
-            AchatItem item = new AchatItem();
+            RestockItem item = new RestockItem();
             item.setProduct(product);
             item.setQuantite(reqItem.getQuantite());
-            item.setAchat(achat);
+            item.setRestock(Restock);
             items.add(item);
 
             // Increase stock
@@ -54,7 +54,7 @@ public class AchatService {
             // Audit log
             ProductActivity log = new ProductActivity();
             log.setProduct(product);
-            log.setActionType("ACHAT");
+            log.setActionType("Restock");
             log.setPerformedBy(performedBy);
             log.setPerformedByRole(performedByRole);
             log.setDetails("qty+=" + reqItem.getQuantite()
@@ -63,30 +63,30 @@ public class AchatService {
             activityRepos.save(log);
         }
 
-        achat.setItems(items);
-        achat = achatRepository.save(achat);
-        return toDto(achat, "Achat enregistré avec succès");
+        Restock.setItems(items);
+        Restock = RestockRepository.save(Restock);
+        return toDto(Restock, "Restock enregistré avec succès");
     }
 
-    public List<AchatDto> getAllAchats() {
-        return achatRepository.findAll().stream()
+    public List<RestockDto> getAllRestocks() {
+        return RestockRepository.findAll().stream()
                 .map(a -> toDto(a, null))
                 .collect(Collectors.toList());
     }
 
     // ── DTO mapping ───────────────────────────────────────────────────────
-    private AchatDto toDto(Achats a, String message) {
-        AchatDto dto = new AchatDto();
+    private RestockDto toDto(Restocks a, String message) {
+        RestockDto dto = new RestockDto();
         dto.setId(a.getId());
         dto.setDate(a.getDate());
         dto.setMessage(message);
 
         BigDecimal total = BigDecimal.ZERO;
         int totalItem = 0;
-        List<AchatItemDetailDto> itemDtos = new ArrayList<>();
+        List<RestockItemDetailDto> itemDtos = new ArrayList<>();
 
-        for (AchatItem item : a.getItems()) {
-            AchatItemDetailDto i = new AchatItemDetailDto();
+        for (RestockItem item : a.getItems()) {
+            RestockItemDetailDto i = new RestockItemDetailDto();
             i.setProductId(item.getProduct().getIdProd());
             i.setProductName(item.getProduct().getProdName());
             i.setQuantite(item.getQuantite());

@@ -20,15 +20,15 @@ import lombok.NoArgsConstructor;
 @Table
 @AllArgsConstructor
 @NoArgsConstructor
-public class Achats {
+public class Restocks {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long Id;
 
-    @Column(name = "dateAchat", nullable = false)
+    @Column(name = "dateRestock", nullable = false)
     private LocalDate date;
 
-    @OneToMany(mappedBy = "achat", cascade = CascadeType.ALL)
-    private List<AchatItem> items;
+    @OneToMany(mappedBy = "Restock", cascade = CascadeType.ALL)
+    private List<RestockItem> items;
 }

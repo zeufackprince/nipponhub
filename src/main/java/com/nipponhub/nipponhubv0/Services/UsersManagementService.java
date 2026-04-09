@@ -75,7 +75,7 @@ public class UsersManagementService {
 
         // ── Default role to USER if the caller did not provide one ────────────
         if (reqres.getRole() == null) {
-            reqres.setRole(UserRole.USER);
+            reqres.setRole(UserRole.CLIENT);
         }
 
         // Validate password strength

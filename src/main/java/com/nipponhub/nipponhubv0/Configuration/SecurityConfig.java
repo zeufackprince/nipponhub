@@ -31,18 +31,18 @@ import com.nipponhub.nipponhubv0.Services.OurUserDetailsService;
  *  GET  /api/v0/categories/**       PUBLIC
  *  GET  /api/v0/country/**          PUBLIC
  *
- *  POST/PUT/DELETE /api/v0/product/**      ADMIN | OWNER
- *  POST/PUT/DELETE /api/v0/categories/**   ADMIN | OWNER
- *  POST/DELETE     /api/v0/country/**      ADMIN | OWNER
- *  /api/v0/achat/**                        ADMIN | OWNER
- *  /api/v0/vente/**                        ADMIN | OWNER  (direct sales)
+ *  POST/PUT/DELETE /api/v0/product/**      ADMIN | MANAGER
+ *  POST/PUT/DELETE /api/v0/categories/**   ADMIN | MANAGER
+ *  POST/DELETE     /api/v0/country/**      ADMIN | MANAGER
+ *  /api/v0/achat/**                        ADMIN | MANAGER
+ *  /api/v0/vente/**                        ADMIN | MANAGER  (direct sales)
  *
  *  POST /api/v0/commande/new               Any authenticated user
  *  GET  /api/v0/commande/my-orders/**      Any authenticated user
- *  /api/v0/commande/**  (other)            ADMIN | OWNER
+ *  /api/v0/commande/**  (other)            ADMIN | MANAGER
  *
- *  /api/admin/**                    ADMIN | OWNER
- *  /api/adminuser/**                ADMIN | OWNER
+ *  /api/admin/**                    ADMIN | MANAGER
+ *  /api/adminuser/**                ADMIN | MANAGER
  *  PUT /api/user/update             Any authenticated user
  *  /api/user/**                     Any authenticated user
  *  Everything else                  Any authenticated user
@@ -91,37 +91,37 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET,  "/api/v0/categories/**").permitAll()
                 .requestMatchers(HttpMethod.GET,  "/api/v0/country/**").permitAll()
 
-                // ── ADMIN / OWNER: product management ─────────────────
-                .requestMatchers(HttpMethod.POST,   "/api/v0/product/**").hasAnyRole("ADMIN","OWNER")
-                .requestMatchers(HttpMethod.PUT,    "/api/v0/product/**").hasAnyRole("ADMIN","OWNER")
-                .requestMatchers(HttpMethod.DELETE, "/api/v0/product/**").hasAnyRole("ADMIN","OWNER")
+                // ── ADMIN / MANAGER: product management ─────────────────
+                .requestMatchers(HttpMethod.POST,   "/api/v0/product/**").hasAnyRole("ADMIN","MANAGER")
+                .requestMatchers(HttpMethod.PUT,    "/api/v0/product/**").hasAnyRole("ADMIN","MANAGER")
+                .requestMatchers(HttpMethod.DELETE, "/api/v0/product/**").hasAnyRole("ADMIN","MANAGER")
 
-                // ── ADMIN / OWNER: category management ────────────────
-                .requestMatchers(HttpMethod.POST,   "/api/v0/categories/**").hasAnyRole("ADMIN","OWNER")
-                .requestMatchers(HttpMethod.PUT,    "/api/v0/categories/**").hasAnyRole("ADMIN","OWNER")
-                .requestMatchers(HttpMethod.DELETE, "/api/v0/categories/**").hasAnyRole("ADMIN","OWNER")
+                // ── ADMIN / MANAGER: category management ────────────────
+                .requestMatchers(HttpMethod.POST,   "/api/v0/categories/**").hasAnyRole("ADMIN","MANAGER")
+                .requestMatchers(HttpMethod.PUT,    "/api/v0/categories/**").hasAnyRole("ADMIN","MANAGER")
+                .requestMatchers(HttpMethod.DELETE, "/api/v0/categories/**").hasAnyRole("ADMIN","MANAGER")
 
-                // ── ADMIN / OWNER: country management ─────────────────
-                .requestMatchers(HttpMethod.POST,   "/api/v0/country/**").hasAnyRole("ADMIN","OWNER")
-                .requestMatchers(HttpMethod.POST,   "/api/v0/city/**").hasAnyRole("ADMIN","OWNER")
-                .requestMatchers(HttpMethod.PUT,    "/api/v0/city/**").hasAnyRole("ADMIN","OWNER")
-                .requestMatchers(HttpMethod.DELETE, "/api/v0/country/**").hasAnyRole("ADMIN","OWNER")
-                .requestMatchers(HttpMethod.DELETE, "/api/v0/city/**").hasAnyRole("ADMIN","OWNER")
+                // ── ADMIN / MANAGER: country management ─────────────────
+                .requestMatchers(HttpMethod.POST,   "/api/v0/country/**").hasAnyRole("ADMIN","MANAGER")
+                .requestMatchers(HttpMethod.POST,   "/api/v0/city/**").hasAnyRole("ADMIN","MANAGER")
+                .requestMatchers(HttpMethod.PUT,    "/api/v0/city/**").hasAnyRole("ADMIN","MANAGER")
+                .requestMatchers(HttpMethod.DELETE, "/api/v0/country/**").hasAnyRole("ADMIN","MANAGER")
+                .requestMatchers(HttpMethod.DELETE, "/api/v0/city/**").hasAnyRole("ADMIN","MANAGER")
 
-                // ── ADMIN / OWNER: achats & direct ventes ─────────────
-                .requestMatchers("/api/v0/achat/**").hasAnyRole("ADMIN","OWNER")
-                .requestMatchers("/api/v0/vente/**").hasAnyRole("ADMIN","OWNER")
+                // ── ADMIN / MANAGER: achats & direct ventes ─────────────
+                .requestMatchers("/api/v0/achat/**").hasAnyRole("ADMIN","MANAGER")
+                .requestMatchers("/api/v0/vente/**").hasAnyRole("ADMIN","MANAGER")
 
                 // ── Any authenticated: place order & own history ───────
                 .requestMatchers(HttpMethod.POST, "/api/v0/commande/new").authenticated()
                 .requestMatchers("/api/v0/commande/my-orders/**").authenticated()
 
-                // ── ADMIN / OWNER: all other commande operations ───────
-                .requestMatchers("/api/v0/commande/**").hasAnyRole("ADMIN","OWNER")
+                // ── ADMIN / MANAGER: all other commande operations ───────
+                .requestMatchers("/api/v0/commande/**").hasAnyRole("ADMIN","MANAGER")
 
                 // ── User management ────────────────────────────────────
-                .requestMatchers("/api/admin/**").hasAnyRole("ADMIN","OWNER")
-                .requestMatchers("/api/adminuser/**").hasAnyRole("ADMIN","OWNER","CLIENT")
+                .requestMatchers("/api/admin/**").hasAnyRole("ADMIN","MANAGER")
+                .requestMatchers("/api/adminuser/**").hasAnyRole("ADMIN","MANAGER","CLIENT")
                 .requestMatchers(HttpMethod.PUT, "/api/user/update").authenticated()
                 .requestMatchers("/api/user/**").authenticated()
                         .anyRequest().authenticated())

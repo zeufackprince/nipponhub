@@ -6,42 +6,42 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import com.nipponhub.nipponhubv0.DTO.AchatDto;
-import com.nipponhub.nipponhubv0.Models.Achats;
-import com.nipponhub.nipponhubv0.Services.AchatService;
+import com.nipponhub.nipponhubv0.DTO.RestockDto;
+import com.nipponhub.nipponhubv0.Models.Restocks;
+import com.nipponhub.nipponhubv0.Services.RestockService;
 
 import lombok.AllArgsConstructor;
 
 
 /**
- * Achat (purchase from supplier) — ADMIN and OWNER only.
+ * Restock (purchase from supplier) — ADMIN and OWNER only.
  * Increases product stock and writes a ProductActivity audit entry.
  */
 @RestController
-@RequestMapping("/api/v0/achat")
+@RequestMapping("/api/v0/Restock")
 @AllArgsConstructor
 @PreAuthorize("hasAnyRole('ADMIN', 'OWNER')")
-public class AchatController {
+public class RestockController {
 
-    private final AchatService achatService;
+    private final RestockService RestockService;
 
-        /** POST /api/v0/achat/new-achat */
-    @PostMapping("/new-achat")
-    public ResponseEntity<AchatDto> newAchat(@RequestBody Achats request) {
+        /** POST /api/v0/Restock/new-Restock */
+    @PostMapping("/new-Restock")
+    public ResponseEntity<RestockDto> newRestock(@RequestBody Restocks request) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         String role = SecurityContextHolder.getContext().getAuthentication().getAuthorities()
                 .iterator().next().getAuthority().replace("ROLE_", "");
         return ResponseEntity.status(201)
-                .body(achatService.createAchat(request, username, role));
+                .body(RestockService.createRestock(request, username, role));
     }
 
     /**
-     * GET /api/v0/achat/get-all-achat
-     * Récupère la liste de tous les achats avec les détails structurés.
+     * GET /api/v0/Restock/get-all-Restock
+     * Récupère la liste de tous les Restocks avec les détails structurés.
      */
-    @GetMapping("/get-all-achat")
-    public ResponseEntity<List<AchatDto>> getAllAchat() {
-        List<AchatDto> res = this.achatService.getAllAchats();
+    @GetMapping("/get-all-Restock")
+    public ResponseEntity<List<RestockDto>> getAllRestock() {
+        List<RestockDto> res = this.RestockService.getAllRestocks();
         return ResponseEntity.ok(res);
     }
 }

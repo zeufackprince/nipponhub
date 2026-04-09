@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class AchatDto {
+public class RestockDto {
 
     private Long Id;
 
@@ -23,7 +23,7 @@ public class AchatDto {
 
     private Integer totalItem;
 
-    private List<AchatItemDetailDto> items;
+    private List<RestockItemDetailDto> items;
 
     private String message;
     

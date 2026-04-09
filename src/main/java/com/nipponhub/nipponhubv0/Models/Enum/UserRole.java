@@ -15,9 +15,7 @@ package com.nipponhub.nipponhubv0.Models.Enum;
 public enum UserRole {
     ADMIN,
     OWNER,
-    CLIENT,
-    USER,       // legacy – treated as CLIENT
-    CUSTOMER,   // legacy – treated as CLIENT
+    CLIENT,  // legacy – treated as CLIENT
     PARTNER,
-    GUEST
+    MANAGER, // future use
 }

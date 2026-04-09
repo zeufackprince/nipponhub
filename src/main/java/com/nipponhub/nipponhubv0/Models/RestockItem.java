@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Entity
 @Table
-public class AchatItem {
+public class RestockItem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,7 +27,7 @@ public class AchatItem {
     private int quantite;
 
     @ManyToOne
-    private Achats achat;
+    private Restocks Restock;
 
     // getters et setters
 }
