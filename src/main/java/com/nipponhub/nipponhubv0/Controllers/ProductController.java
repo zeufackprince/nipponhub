@@ -1,6 +1,7 @@
 package com.nipponhub.nipponhubv0.Controllers;
 
 import com.nipponhub.nipponhubv0.DTO.ProductDto;
+import com.nipponhub.nipponhubv0.Models.City;
 import com.nipponhub.nipponhubv0.Models.ProductActivity;
 import com.nipponhub.nipponhubv0.Services.ProductService;
 import lombok.RequiredArgsConstructor;
@@ -162,6 +163,32 @@ public class ProductController {
     public ResponseEntity<List<ProductDto>> getProductsByCountry(@RequestParam String country) {
         List<ProductDto> products = productServices.getProductByCountry(country);
         return ResponseEntity.ok(products);
+    }
+
+    /**
+     * NEW — GET /api/v0/product/searchByCity?country=...&city=...
+     * Filter products by city within a country (location-based filtering).
+     * Combination of country and city uniquely identifies location.
+     * Public endpoint — visitors can use.
+     */
+    @GetMapping("/searchByCity")
+    public ResponseEntity<List<ProductDto>> getProductsByCity(
+            @RequestParam String country,
+            @RequestParam String city) {
+        List<ProductDto> products = productServices.getProductByCity(city, country);
+        return ResponseEntity.ok(products);
+    }
+
+    /**
+     * NEW — GET /api/v0/product/cities?country=...
+     * Fetch all cities available in a specific country.
+     * Useful for populating city dropdown during product search.
+     * Public endpoint — visitors can use.
+     */
+    @GetMapping("/cities")
+    public ResponseEntity<List<City>> getCitiesByCountry(@RequestParam String country) {
+        List<City> cities = productServices.getCitiesByCountry(country);
+        return ResponseEntity.ok(cities);
     }
 
     /** 

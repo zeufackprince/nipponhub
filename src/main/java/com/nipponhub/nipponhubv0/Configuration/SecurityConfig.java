@@ -86,6 +86,8 @@ public class SecurityConfig {
 
                 // ── Public: catalogue reads ────────────────────────────
                 .requestMatchers(HttpMethod.GET,  "/api/v0/product/**").permitAll()
+                .requestMatchers(HttpMethod.GET,  "/api/v0/city/**").permitAll()
+                .requestMatchers(HttpMethod.GET,  "/api/v0/product/**").permitAll()
                 .requestMatchers(HttpMethod.GET,  "/api/v0/categories/**").permitAll()
                 .requestMatchers(HttpMethod.GET,  "/api/v0/country/**").permitAll()
 
@@ -101,7 +103,10 @@ public class SecurityConfig {
 
                 // ── ADMIN / OWNER: country management ─────────────────
                 .requestMatchers(HttpMethod.POST,   "/api/v0/country/**").hasAnyRole("ADMIN","OWNER")
+                .requestMatchers(HttpMethod.POST,   "/api/v0/city/**").hasAnyRole("ADMIN","OWNER")
+                .requestMatchers(HttpMethod.PUT,    "/api/v0/city/**").hasAnyRole("ADMIN","OWNER")
                 .requestMatchers(HttpMethod.DELETE, "/api/v0/country/**").hasAnyRole("ADMIN","OWNER")
+                .requestMatchers(HttpMethod.DELETE, "/api/v0/city/**").hasAnyRole("ADMIN","OWNER")
 
                 // ── ADMIN / OWNER: achats & direct ventes ─────────────
                 .requestMatchers("/api/v0/achat/**").hasAnyRole("ADMIN","OWNER")

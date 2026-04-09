@@ -3,10 +3,12 @@ package com.nipponhub.nipponhubv0.Services;
 import com.nipponhub.nipponhubv0.DTO.ProductDto;
 import com.nipponhub.nipponhubv0.Mappers.ProductMapper;
 import com.nipponhub.nipponhubv0.Models.CategoriesProd;
+import com.nipponhub.nipponhubv0.Models.City;
 import com.nipponhub.nipponhubv0.Models.Country;
 import com.nipponhub.nipponhubv0.Models.OurUsers;
 import com.nipponhub.nipponhubv0.Models.Product;
 import com.nipponhub.nipponhubv0.Models.ProductActivity;
+import com.nipponhub.nipponhubv0.Repositories.mysql.CityRepository;
 import com.nipponhub.nipponhubv0.Repositories.mysql.CategoriesRepository;
 import com.nipponhub.nipponhubv0.Repositories.mysql.CountryRepository;
 import com.nipponhub.nipponhubv0.Repositories.mysql.ProductActivityRepository;
@@ -43,6 +45,7 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final ProductMapper prodMapper;
     private final CountryRepository countryRepository;
+    private final CityRepository cityRepository;
     private final CategoriesRepository categoriesRepository;
     private final FileStorageService fileStorageService;
     private final UserRepository userRepository;
@@ -305,6 +308,75 @@ public class ProductService {
  
     return res;
 }
+
+    /**
+     * NEW — Get products by city (location-based filtering).
+     * Public endpoint — all users can use.
+     * Useful for displaying products available in a specific city.
+     *
+     * @param cityName the city name
+     * @param countryName the country name (to uniquely identify city)
+     * @return list of products available in the city
+     */
+    @Transactional
+    public List<ProductDto> getProductByCity(String cityName, String countryName) {
+        List<ProductDto> res = new ArrayList<>();
+        try {
+            List<Product> products = productRepository.findByCityAndCountry(cityName, countryName);
+            if (products.isEmpty()) {
+                log.info("No products found for city: {} in country: {}", cityName, countryName);
+                return res;
+            }
+            res = products.stream()
+                .map(prodMapper::prodToDto)
+                .collect(Collectors.toList());
+            log.info("Found {} product(s) for city: {} in country: {}", res.size(), cityName, countryName);
+        } catch (Exception e) {
+            log.error("Error fetching products by city '{}' in country '{}': {}", cityName, countryName, e.getMessage(), e);
+        }
+        return res;
+    }
+
+    /**
+     * NEW — Get all cities available in a country.
+     * Public endpoint — useful for populating city dropdown during product search.
+     *
+     * @param countryName the country name
+     * @return list of cities in the country
+     */
+    @Transactional
+    public List<City> getCitiesByCountry(String countryName) {
+        List<City> res = new ArrayList<>();
+        try {
+            Optional<Country> dbCountry = countryRepository.getByCountryName(countryName);
+            if (dbCountry.isEmpty()) {
+                log.warn("No country found with name: {}", countryName);
+                return res;
+            }
+            res = cityRepository.findByCountry(dbCountry.get());
+            log.info("Found {} city/cities in country: {}", res.size(), countryName);
+        } catch (Exception e) {
+            log.error("Error fetching cities for country '{}': {}", countryName, e.getMessage(), e);
+        }
+        return res;
+    }
+
+    /**
+     * NEW — Get a specific city by name and country.
+     * Useful for validation or direct city lookup.
+     *
+     * @param cityName the city name
+     * @param countryName the country name
+     * @return City object if found, empty Optional otherwise
+     */
+    public Optional<City> getCity(String cityName, String countryName) {
+        try {
+            return cityRepository.findByCityNameAndCountryName(cityName, countryName);
+        } catch (Exception e) {
+            log.error("Error fetching city '{}' in country '{}': {}", cityName, countryName, e.getMessage(), e);
+            return Optional.empty();
+        }
+    }
 
     @Transactional
     public void retirerQuantite(Long idProd, int quantite) {

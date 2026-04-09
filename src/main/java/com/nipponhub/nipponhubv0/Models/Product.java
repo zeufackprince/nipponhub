@@ -97,6 +97,15 @@ public class Product {
     )
     private List<Country> countries = new ArrayList<>();
 
+    /**
+     * Many-to-One with City (location hierarchy).
+     * A product belongs to one city within a country for location-based filtering.
+     * FetchType.LAZY to avoid unnecessary queries; loaded when needed.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "city_id", nullable = true)
+    private City city;
+
     // ─── LIFECYCLE ───────────────────────────────────────────────────────────────
 
     @PrePersist
