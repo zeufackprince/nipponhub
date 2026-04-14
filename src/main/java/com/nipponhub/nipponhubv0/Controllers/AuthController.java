@@ -33,7 +33,7 @@ public class AuthController {
      * Consumes: multipart/form-data
      * @throws IOException 
      */
-    @PostMapping("/register")
+    @PostMapping("/register-client")
     public ResponseEntity<ReqRes> register(
             @RequestParam("name")      String name,
             @RequestParam("email")     String email,
@@ -59,7 +59,7 @@ public class AuthController {
      * Returns JWT access token + refresh token.
      * Consumes: application/json  { "email": "...", "password": "..." }
      */
-    @PostMapping("/login")
+    @PostMapping("/login-client")
     public ResponseEntity<ReqRes> login(@RequestBody ReqRes loginRequest) {
         return ResponseEntity.ok(usersManagementService.login(loginRequest));
     }

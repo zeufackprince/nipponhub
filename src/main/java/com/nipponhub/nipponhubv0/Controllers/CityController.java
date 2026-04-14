@@ -33,7 +33,7 @@ public class CityController {
      * Example request:
      * POST /api/v0/city/create?cityName=Tokyo&cityCode=JP-TYO&countryName=Japan
      */
-    @PostMapping("/create")
+    @PostMapping("/create-City")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> createCity(
             @RequestParam String cityName,
@@ -58,7 +58,7 @@ public class CityController {
      * GET /api/v0/city/all
      * Get all cities (public endpoint).
      */
-    @GetMapping("/all")
+    @GetMapping("/get-all-Cities")
     public ResponseEntity<List<CityDto>> getAllCities() {
         List<CityDto> cities = cityService.getAllCities();
         return ResponseEntity.ok(cities);
@@ -68,7 +68,7 @@ public class CityController {
      * GET /api/v0/city/{idCity}
      * Get a specific city by ID (public endpoint).
      */
-    @GetMapping("/{idCity}")
+    @GetMapping("/getCityById/{idCity}")
     public ResponseEntity<?> getCityById(@PathVariable Long idCity) {
         Optional<CityDto> city = cityService.getCityById(idCity);
         if (city.isEmpty()) {
@@ -117,7 +117,7 @@ public class CityController {
      * Example request:
      * PUT /api/v0/city/1?cityName=Edo&cityCode=JP-EDO
      */
-    @PutMapping("/{idCity}")
+    @PutMapping("/updateCity/{idCity}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> updateCity(
             @PathVariable Long idCity,
@@ -140,7 +140,7 @@ public class CityController {
      * Delete a city (ADMIN only).
      * WARNING: Products in this city will have their city reference set to NULL.
      */
-    @DeleteMapping("/{idCity}")
+    @DeleteMapping("/deleteCity/{idCity}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deleteCity(@PathVariable Long idCity) {
         try {

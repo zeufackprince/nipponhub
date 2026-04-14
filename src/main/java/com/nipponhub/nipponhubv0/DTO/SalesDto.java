@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class VenteDto {
+public class SalesDto {
 
     private Long id;
 
@@ -27,7 +27,7 @@ public class VenteDto {
 
     private BigDecimal prixUnitaire;
  
-    private List<VenteItemDetailDto> items;
+    private List<SalesItemDetailDto> items;
     
     private String message;
 

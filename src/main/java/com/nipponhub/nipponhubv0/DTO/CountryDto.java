@@ -10,5 +10,6 @@ public class CountryDto {
     private Long idCountry;
     private String countryName;
     private String countryCode;
+    private String devise;
     private String message;
 }

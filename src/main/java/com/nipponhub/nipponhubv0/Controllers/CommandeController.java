@@ -29,7 +29,7 @@ public class CommandeController {
      *
      * Body: { "items": [{ "productId": 1, "quantite": 2, "prixVendu": 20.00 }], "note": "..." }
      */
-    @PostMapping("/new")
+    @PostMapping("/newCommande")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<CommandeDto> placeCommande(
             @RequestBody CommandeDto request) {
@@ -68,7 +68,7 @@ public class CommandeController {
      * GET /api/v0/commande/all
      * All orders with full client info.
      */
-    @GetMapping("/all")
+    @GetMapping("/allCommands")
     @PreAuthorize("hasAnyRole('ADMIN', 'OWNER')")
     public ResponseEntity<List<CommandeDto>> getAllCommandes() {
         return ResponseEntity.ok(commandeService.getAllCommandes());
@@ -88,7 +88,7 @@ public class CommandeController {
      * GET /api/v0/commande/{id}
      * Admin fetches any specific order (includes client details).
      */
-    @GetMapping("/{id}")
+    @GetMapping("/getCommande/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'OWNER')")
     public ResponseEntity<CommandeDto> getCommande(@PathVariable Long id) {
         return ResponseEntity.ok(commandeService.getCommandeById(id));

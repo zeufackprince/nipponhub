@@ -115,7 +115,7 @@ public class ProductController {
      * GET /api/v0/product/all
      * Returns all products.
      */
-    @GetMapping("/all")
+    @GetMapping("/allProduct")
     public ResponseEntity<List<ProductDto>> getAllProducts() {
         List<ProductDto> products = productServices.getAllProducts();
         return ResponseEntity.ok(products);
@@ -125,7 +125,7 @@ public class ProductController {
      * GET /api/v0/product/{idProd}
      * Returns a product by its MySQL id.
      */
-    @GetMapping("/{idProd}")
+    @GetMapping("/productById/{idProd}")
     public ResponseEntity<ProductDto> getProductById(@PathVariable Long idProd) {
         ProductDto product = productServices.getProductById(idProd);
 
@@ -171,7 +171,7 @@ public class ProductController {
      * Combination of country and city uniquely identifies location.
      * Public endpoint — visitors can use.
      */
-    @GetMapping("/searchByCity")
+    @GetMapping("/searchProductByCity")
     public ResponseEntity<List<ProductDto>> getProductsByCity(
             @RequestParam String country,
             @RequestParam String city) {
@@ -185,7 +185,7 @@ public class ProductController {
      * Useful for populating city dropdown during product search.
      * Public endpoint — visitors can use.
      */
-    @GetMapping("/cities")
+    @GetMapping("/citiesByCOuntry")
     public ResponseEntity<List<City>> getCitiesByCountry(@RequestParam String country) {
         List<City> cities = productServices.getCitiesByCountry(country);
         return ResponseEntity.ok(cities);
@@ -195,7 +195,7 @@ public class ProductController {
           * NEW  DELETE /api/v0/product/{idProd}
      * Permanently deletes a product and its GridFS images.
      */
-    @DeleteMapping("/{idProd}")
+    @DeleteMapping("/deleteProduct/{idProd}")
     @PreAuthorize("hasAnyRole('ADMIN', 'OWNER')")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long idProd) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -213,7 +213,7 @@ public class ProductController {
      * NEW  GET /api/v0/product/{idProd}/activity
      * Full activity log for one product (who created, updated, ordered, delivered…).
      */
-    @GetMapping("/{idProd}/activity")
+    @GetMapping("/activity/{idProd}")
     @PreAuthorize("hasAnyRole('ADMIN', 'OWNER')")
     public ResponseEntity<List<ProductActivity>> getProductActivity(@PathVariable Long idProd) {
         return ResponseEntity.ok(productServices.getActivityForProduct(idProd));

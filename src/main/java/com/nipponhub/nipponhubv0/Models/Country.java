@@ -39,6 +39,9 @@ public class Country {
     @Column(name = "country_code", unique = true)
     private String countryCode;
 
+    @Column(name = "devises")
+    private String devise;
+
     // ✅ mappedBy = the field name in Product
     @ManyToMany(mappedBy = "countries")
     @JsonIgnore  // prevents infinite recursion in JSON responses

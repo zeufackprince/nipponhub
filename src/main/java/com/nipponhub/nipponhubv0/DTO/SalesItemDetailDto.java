@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class VenteItemDetailDto {
+public class SalesItemDetailDto {
     private Long productId;
     private String productName;
     private int quantite;

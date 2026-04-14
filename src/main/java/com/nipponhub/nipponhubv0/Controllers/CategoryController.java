@@ -56,7 +56,7 @@ public class CategoryController {
     /**
      * GET /api/v0/categories/{id}
      */
-    @GetMapping("/{id}")
+    @GetMapping("/getCategoryById/{id}")
     public ResponseEntity<?> getCategoryById(@PathVariable Long id) {
         return categoryServices.getCategoryById(id)
             .<ResponseEntity<?>>map(ResponseEntity::ok)

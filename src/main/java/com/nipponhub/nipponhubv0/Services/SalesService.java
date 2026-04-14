@@ -9,37 +9,37 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.nipponhub.nipponhubv0.DTO.VenteDto;
+import com.nipponhub.nipponhubv0.DTO.SalesDto;
 import com.nipponhub.nipponhubv0.Models.Commande;
 import com.nipponhub.nipponhubv0.Models.CommandeItem;
 import com.nipponhub.nipponhubv0.Models.Product;
-import com.nipponhub.nipponhubv0.Models.Vente;
-import com.nipponhub.nipponhubv0.Models.VenteItem;
+import com.nipponhub.nipponhubv0.Models.Sales;
+import com.nipponhub.nipponhubv0.Models.SalesItem;
 import com.nipponhub.nipponhubv0.Repositories.mysql.ProductRepository;
-import com.nipponhub.nipponhubv0.Repositories.mysql.VenteRepository;
-import com.nipponhub.nipponhubv0.Mappers.VenteMapper;
+import com.nipponhub.nipponhubv0.Repositories.mysql.SalesRepository;
+import com.nipponhub.nipponhubv0.Mappers.SalesMapper;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
-public class VenteService {
+public class SalesService {
 
     private final ProductService productService;
 
     private final ProductRepository productRepository;
     
-    private final VenteRepository venteRepo;
+    private final SalesRepository SalesRepo;
 
-    private final VenteMapper venteMapper;
+    private final SalesMapper SalesMapper;
 
 
     @Transactional
-    public VenteDto registerVente(Vente vente) {
-        vente.setDate(LocalDate.now());
+    public SalesDto registerSales(Sales Sales) {
+        Sales.setDate(LocalDate.now());
 
-        for (VenteItem item : vente.getItems()) {
+        for (SalesItem item : Sales.getItems()) {
             // ✅ Handle case where product is null but productId is provided (from JSON deserialization)
             Long productId;
             if (item.getProduct() != null) {
@@ -47,7 +47,7 @@ public class VenteService {
             } else if (item.getProductId() != null) {
                 productId = item.getProductId();
             } else {
-                throw new IllegalArgumentException("VenteItem must have either product object or productId");
+                throw new IllegalArgumentException("SalesItem must have either product object or productId");
             }
             
             Product prod = productRepository.findById(productId)
@@ -73,11 +73,11 @@ public class VenteService {
             item.setPrix(itemTotal);
             item.setGain(itemGain);
             item.setProduct(prod);  // ✅ Ensure product is set
-            item.setVente(vente);
+            item.setSales(Sales);
         }
 
-        Vente saved = venteRepo.save(vente);
-        return venteMapper.toDto(saved, "Vente enregistrée avec succès");
+        Sales saved = SalesRepo.save(Sales);
+        return SalesMapper.toDto(saved, "Sales enregistrée avec succès");
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -86,18 +86,18 @@ public class VenteService {
     // ══════════════════════════════════════════════════════════════════════
  
     /**
-     * Create a Vente from a delivered Commande.
+     * Create a Sales from a delivered Commande.
      *  - Decrements product stock (rolls back the whole transaction on failure)
-     *  - Links the Vente to the client and commande
+     *  - Links the Sales to the client and commande
      */
     @Transactional
-    public Vente createFromCommande(Commande commande, String adminEmail, String adminRole) {
-        Vente vente = new Vente();
-        vente.setDate(LocalDate.now());
-        vente.setClient(commande.getClient());
-        vente.setCommande(commande);
+    public Sales createFromCommande(Commande commande, String adminEmail, String adminRole) {
+        Sales Sales = new Sales();
+        Sales.setDate(LocalDate.now());
+        Sales.setClient(commande.getClient());
+        Sales.setCommande(commande);
  
-        List<VenteItem> venteItems = new ArrayList<>();
+        List<SalesItem> SalesItems = new ArrayList<>();
         for (CommandeItem ci : commande.getItems()) {
             Product product = productRepository.findById(ci.getProduct().getIdProd())
                     .orElseThrow(() -> new EntityNotFoundException(
@@ -120,22 +120,22 @@ public class VenteService {
             BigDecimal totalLigne = prixVendu.multiply(BigDecimal.valueOf(qty));
             BigDecimal gainLigne  = totalLigne.subtract(coutLigne);
  
-            VenteItem vi = new VenteItem();
+            SalesItem vi = new SalesItem();
             vi.setProduct(product);
             vi.setQuantite(qty);
             vi.setPrixVendu(prixVendu);
             vi.setPrix(totalLigne);
             vi.setGain(gainLigne);
-            vi.setVente(vente);  // ✅ Set the vente reference for proper cascading
-            venteItems.add(vi);
+            vi.setSales(Sales);  // ✅ Set the Sales reference for proper cascading
+            SalesItems.add(vi);
  
             // Decrement stock
             product.setProdQty(product.getProdQty() - qty);
             productRepository.save(product);
         }
  
-        vente.setItems(venteItems);
-        return venteRepo.save(vente);
+        Sales.setItems(SalesItems);
+        return SalesRepo.save(Sales);
     }
  
     // ══════════════════════════════════════════════════════════════════════
@@ -144,13 +144,13 @@ public class VenteService {
     // ══════════════════════════════════════════════════════════════════════
  
     @Transactional
-    public VenteDto registerDirectVente(Vente request) {
-        Vente vente = new Vente();
-        vente.setDate(LocalDate.now());
+    public SalesDto registerDirectSales(Sales request) {
+        Sales Sales = new Sales();
+        Sales.setDate(LocalDate.now());
         // client and commande are null for direct sales
  
-        List<VenteItem> items = new ArrayList<>();
-        for (VenteItem reqItem : request.getItems()) {
+        List<SalesItem> items = new ArrayList<>();
+        for (SalesItem reqItem : request.getItems()) {
             // ✅ Handle case where product is null but productId is provided (from JSON deserialization)
             Long productId;
             if (reqItem.getProduct() != null) {
@@ -158,7 +158,7 @@ public class VenteService {
             } else if (reqItem.getProductId() != null) {
                 productId = reqItem.getProductId();
             } else {
-                throw new IllegalArgumentException("VenteItem must have either product object or productId");
+                throw new IllegalArgumentException("SalesItem must have either product object or productId");
             }
             
             Product product = productRepository.findById(productId)
@@ -181,49 +181,49 @@ public class VenteService {
             BigDecimal total = prixVendu.multiply(BigDecimal.valueOf(qty));
             BigDecimal gain  = total.subtract(cout);
  
-            VenteItem vi = new VenteItem();
+            SalesItem vi = new SalesItem();
             vi.setProduct(product);
             vi.setQuantite(qty);
             vi.setPrixVendu(prixVendu);
             vi.setPrix(total);
             vi.setGain(gain);
-            vi.setVente(vente);  // ✅ Set vente reference
+            vi.setSales(Sales);  // ✅ Set Sales reference
             items.add(vi);
  
             product.setProdQty(product.getProdQty() - qty);
             productRepository.save(product);
         }
  
-        vente.setItems(items);
-        return venteMapper.toDto(venteRepo.save(vente), "Vente enregistrée avec succès");
+        Sales.setItems(items);
+        return SalesMapper.toDto(SalesRepo.save(Sales), "Sales enregistrée avec succès");
     }
 
     @Transactional(readOnly = true)
-    public List<VenteDto> getAllVente() {
-        List<Vente> allVente = this.venteRepo.findAll();
-        if(allVente.isEmpty()){
+    public List<SalesDto> getAllSales() {
+        List<Sales> allSales = this.SalesRepo.findAll();
+        if(allSales.isEmpty()){
             throw new EntityNotFoundException("No sales data found in DB!!");
         }
-        return allVente.stream()
-                .map(vente -> venteMapper.toDto(vente, "Ventes fetched successfully"))
+        return allSales.stream()
+                .map(Sales -> SalesMapper.toDto(Sales, "Saless fetched successfully"))
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    public VenteDto getVenteById(Long id) {
-        Vente vente = venteRepo.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Vente with ID " + id + " not found"));
-        return venteMapper.toDto(vente, "Vente fetched successfully");
+    public SalesDto getSalesById(Long id) {
+        Sales Sales = SalesRepo.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("Sales with ID " + id + " not found"));
+        return SalesMapper.toDto(Sales, "Sales fetched successfully");
     }
 
     @Transactional(readOnly = true)
-    public List<VenteDto> getVentesByDate(LocalDate date) {
-        List<Vente> ventes = venteRepo.findByDate(date);
-        if (ventes.isEmpty()) {
-            throw new EntityNotFoundException("No ventes found for date " + date);
+    public List<SalesDto> getSalessByDate(LocalDate date) {
+        List<Sales> Saless = SalesRepo.findByDate(date);
+        if (Saless.isEmpty()) {
+            throw new EntityNotFoundException("No Saless found for date " + date);
         }
-        return ventes.stream()
-                .map(vente -> venteMapper.toDto(vente, "Ventes fetched successfully"))
+        return Saless.stream()
+                .map(Sales -> SalesMapper.toDto(Sales, "Saless fetched successfully"))
                 .collect(Collectors.toList());
     }
 

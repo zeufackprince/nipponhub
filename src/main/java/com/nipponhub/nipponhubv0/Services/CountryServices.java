@@ -22,11 +22,13 @@ public class CountryServices {
             Country country = new Country();
             country.setCountryName(countryDto.getCountryName());
             country.setCountryCode(countryDto.getCountryCode());
+            country.setDevise(countryDto.getDevise());
 
             Country savedCountry = this.countryRepository.save(country);
             res.setIdCountry(savedCountry.getIdCountry());
             res.setCountryName(savedCountry.getCountryName());
             res.setCountryCode(savedCountry.getCountryCode());
+            res.setDevise(savedCountry.getDevise());
 
             res.setMessage("Country Created Successfully...");
         } catch (Exception e) {

@@ -9,22 +9,22 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Table
+@Table(name = "sales")
 @Entity
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Vente {
+public class Sales {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long Id;
 
-    @Column(name = "dateVente", nullable = false)
+    @Column(name = "dateSales", nullable = false)
     private LocalDate date;
 
-    @OneToMany(mappedBy = "vente", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
-    private List<VenteItem> items = new ArrayList<>();  // ✅ Initialize to empty list to avoid null
+    @OneToMany(mappedBy = "Sales", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+    private List<SalesItem> items = new ArrayList<>();  // ✅ Initialize to empty list to avoid null
 
      /**
      * The client whose order triggered this sale.
@@ -35,7 +35,7 @@ public class Vente {
     private OurUsers client;
  
     /**
-     * The commande this vente was created from.
+     * The commande this Sales was created from.
      * Null for direct admin sales.
      */
     @OneToOne(fetch = FetchType.LAZY)

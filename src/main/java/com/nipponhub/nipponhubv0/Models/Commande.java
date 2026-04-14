@@ -14,7 +14,7 @@ import lombok.Setter;
 
 /**
  * A client order.  Stock is NOT touched until the admin marks it DELIVERED.
- * At that point VenteService creates the matching Vente and decrements stock.
+ * At that point SalesService creates the matching Sales and decrements stock.
  */
 @Entity
 @Table(name = "commande")
@@ -52,7 +52,7 @@ public class Commande {
  
     /** Populated once status = DELIVERED. */
     @OneToOne(mappedBy = "commande", fetch = FetchType.LAZY)
-    private Vente vente;
+    private Sales Sales;
  
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

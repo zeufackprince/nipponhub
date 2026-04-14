@@ -13,7 +13,7 @@ import com.nipponhub.nipponhubv0.Models.CommandeItem;
 import com.nipponhub.nipponhubv0.Models.OurUsers;
 import com.nipponhub.nipponhubv0.Models.Product;
 import com.nipponhub.nipponhubv0.Models.ProductActivity;
-import com.nipponhub.nipponhubv0.Models.Vente;
+import com.nipponhub.nipponhubv0.Models.Sales;
 import com.nipponhub.nipponhubv0.Models.Enum.CommandeStatus;
 import com.nipponhub.nipponhubv0.Repositories.mysql.CommandeRepository;
 import com.nipponhub.nipponhubv0.Repositories.mysql.ProductActivityRepository;
@@ -31,7 +31,7 @@ public class CommandeService {
     @Autowired private CommandeRepository    commandeRepo;
     @Autowired private ProductRepository     productRepo;
     @Autowired private UserRepository     userRepo;          // your existing user repo
-    @Autowired private VenteService          venteService;
+    @Autowired private SalesService          SalesService;
     @Autowired private ProductActivityRepository activityRepo;
  
     // ══════════════════════════════════════════════════════════════════════
@@ -123,7 +123,7 @@ public class CommandeService {
      * Update the status of a commande (CONFIRMED, CANCELLED, DELIVERED).
      *
      * When status = DELIVERED:
-     *   1. VenteService creates a Vente linked to this commande + client
+     *   1. SalesService creates a Sales linked to this commande + client
      *   2. Stock is decremented for each product
      *   3. Activity is logged for every product
      */
@@ -144,16 +144,16 @@ public class CommandeService {
         commande.setConfirmedBy(adminEmail);
  
         if (newStatus == CommandeStatus.DELIVERED) {
-            // This is the moment stock is touched and Vente is created
-            Vente vente = venteService.createFromCommande(commande, adminEmail, admin.getRole().name());
-            commande.setVente(vente);
+            // This is the moment stock is touched and Sales is created
+            Sales Sales = SalesService.createFromCommande(commande, adminEmail, admin.getRole().name());
+            commande.setSales(Sales);
  
             // Log activity for every product in the commande
             for (CommandeItem item : commande.getItems()) {
                 log(item.getProduct(), "DELIVERED", adminEmail, admin.getRole().name(),
                         "commandeId=" + id + " | clientId=" + commande.getClient().getUserid()
                         + " | qty=" + item.getQuantite()
-                        + " | venteId=" + vente.getId());
+                        + " | SalesId=" + Sales.getId());
             }
         }
  
@@ -222,8 +222,8 @@ public class CommandeService {
             dto.setClientName(c.getClient().getName());
             dto.setClientEmail(c.getClient().getEmail());
         }
-        if (c.getVente() != null) {
-            dto.setVenteId(c.getVente().getId());
+        if (c.getSales() != null) {
+            dto.setId(c.getSales().getId());
         }
  
         List<CommandeItemDto> itemDtos = new ArrayList<>();

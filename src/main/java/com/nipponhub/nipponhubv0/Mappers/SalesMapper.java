@@ -7,11 +7,11 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
-import com.nipponhub.nipponhubv0.DTO.VenteDto;
-import com.nipponhub.nipponhubv0.DTO.VenteItemDetailDto;
+import com.nipponhub.nipponhubv0.DTO.SalesDto;
+import com.nipponhub.nipponhubv0.DTO.SalesItemDetailDto;
 import com.nipponhub.nipponhubv0.Models.Product;
-import com.nipponhub.nipponhubv0.Models.Vente;
-import com.nipponhub.nipponhubv0.Models.VenteItem;
+import com.nipponhub.nipponhubv0.Models.Sales;
+import com.nipponhub.nipponhubv0.Models.SalesItem;
 import com.nipponhub.nipponhubv0.Repositories.mysql.ProductRepository;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -20,15 +20,15 @@ import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 @Component
-public class VenteMapper {
+public class SalesMapper {
 
     private final ProductRepository productRepository;
     
-    public VenteDto mapVenteToDto(Vente vente, String message) {
+    public SalesDto mapSalesToDto(Sales Sales, String message) {
 
-        VenteDto dto = new VenteDto();
-        dto.setId(vente.getId());
-        dto.setDate(vente.getDate());
+        SalesDto dto = new SalesDto();
+        dto.setId(Sales.getId());
+        dto.setDate(Sales.getDate());
         dto.setMessage(message);
 
         BigDecimal coutTotal = BigDecimal.ZERO;
@@ -36,7 +36,7 @@ public class VenteMapper {
         BigDecimal totalGain = BigDecimal.ZERO;
         int totalItem = 0;
 
-        List<VenteItemDetailDto> itemDetails = vente.getItems().stream().map(item -> {
+        List<SalesItemDetailDto> itemDetails = Sales.getItems().stream().map(item -> {
             Product prod = productRepository.findById(item.getProduct().getIdProd())
                 .orElseThrow(() -> new EntityNotFoundException("Produit non trouvé"));
 
@@ -54,7 +54,7 @@ public class VenteMapper {
                 itemGain = appliedPrixVendu.subtract(prod.getUnitPrice()).multiply(qte);
             }
 
-            return new VenteItemDetailDto(
+            return new SalesItemDetailDto(
                 prod.getIdProd(),
                 prod.getProdName(),
                 item.getQuantite(),
@@ -65,7 +65,7 @@ public class VenteMapper {
             );
         }).collect(Collectors.toList());
 
-        for (VenteItemDetailDto detail : itemDetails) {
+        for (SalesItemDetailDto detail : itemDetails) {
             // Calculating the base cost (Unit Price * Qty)
             BigDecimal baseCost = detail.getPrixUnitaire().multiply(BigDecimal.valueOf(detail.getQuantite()));
             coutTotal = coutTotal.add(baseCost);
@@ -84,8 +84,8 @@ public class VenteMapper {
         return dto;
     }
 
-    public VenteDto toDto(Vente v, String message) {
-        VenteDto dto = new VenteDto();
+    public SalesDto toDto(Sales v, String message) {
+        SalesDto dto = new SalesDto();
         dto.setId(v.getId());
         dto.setDate(v.getDate());
         dto.setMessage(message);
@@ -104,12 +104,12 @@ public class VenteMapper {
         BigDecimal prixVendu  = BigDecimal.ZERO;
         BigDecimal gain       = BigDecimal.ZERO;
         int totalItem         = 0;
-        List<VenteItemDetailDto> itemDtos = new ArrayList<>();
+        List<SalesItemDetailDto> itemDtos = new ArrayList<>();
  
         // ✅ Null-safe iteration over items
         if (v.getItems() != null && !v.getItems().isEmpty()) {
-            for (VenteItem item : v.getItems()) {
-                VenteItemDetailDto i = new VenteItemDetailDto();
+            for (SalesItem item : v.getItems()) {
+                SalesItemDetailDto i = new SalesItemDetailDto();
                 i.setProductId(item.getProduct().getIdProd());
                 i.setProductName(item.getProduct().getProdName());
                 i.setQuantite(item.getQuantite());

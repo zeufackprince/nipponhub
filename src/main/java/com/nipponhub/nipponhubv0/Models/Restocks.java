@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 
 @Data
 @Entity
-@Table
+@Table(name = "restock")
 @AllArgsConstructor
 @NoArgsConstructor
 public class Restocks {

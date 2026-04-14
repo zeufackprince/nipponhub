@@ -12,8 +12,8 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "vente_item")
-public class VenteItem {
+@Table(name = "sales_item")
+public class SalesItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -32,9 +32,9 @@ public class VenteItem {
     private Product product;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "vente_id", nullable = false)
+    @JoinColumn(name = "Sales_id", nullable = false)
     @JsonIgnore  // ✅ Prevent infinite recursion when serializing
-    private Vente vente;
+    private Sales Sales;
     
     // ✅ Transient field for incoming JSON deserialization (not persisted)
     @Transient
